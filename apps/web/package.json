@@ -1,0 +1,14 @@
+{
+  "name": "@devgrill/web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'TODO: next dev'",
+    "build": "echo 'TODO: next build'",
+    "lint": "echo 'TODO: next lint'",
+    "typecheck": "echo 'TODO: tsc --noEmit'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
