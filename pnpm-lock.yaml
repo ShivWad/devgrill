@@ -21,7 +21,7 @@ importers:
         specifier: ^1.4.0
         version: 1.4.0(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))
       '@langchain/core':
-        specifier: ^1.1
+        specifier: ^1.1.48
         version: 1.1.48(openai@6.42.0(zod@3.25.76))
       '@langchain/langgraph':
         specifier: ^1.4.1
@@ -29,6 +29,9 @@ importers:
       '@langchain/langgraph-checkpoint-postgres':
         specifier: ^1.0.3
         version: 1.0.3(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))(@langchain/langgraph-checkpoint@1.1.0(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76))))
+      '@langchain/ollama':
+        specifier: ^1.2.7
+        version: 1.2.7(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))
       '@langchain/openai':
         specifier: ^1.4.7
         version: 1.4.7(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))
@@ -288,6 +291,12 @@ packages:
     peerDependenciesMeta:
       zod-to-json-schema:
         optional: true
+
+  '@langchain/ollama@1.2.7':
+    resolution: {integrity: sha512-7Gu17q1dn4nKGB3ZYJyaaL8H/2k7LHvcL6V25S8cVDniTTSvd0fWzI5MzPJvbf9WPxBhvmf+rDDLAhOWljHEtQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@langchain/core': ^1.0.0
 
   '@langchain/openai@1.4.7':
     resolution: {integrity: sha512-i1YLV4pWbGC6W8m0ZNpLObJuf1nyU4o8aWyX4AF9fHn7eM67HfIJWQ5n5XzcCpuSa41otrxA9jvH5XRKwI1qDA==}
@@ -614,6 +623,9 @@ packages:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
 
+  ollama@0.6.3:
+    resolution: {integrity: sha512-KEWEhIqE5wtfzEIZbDCLH51VFZ6Z3ZSa6sIOg/E/tBV8S51flyqBOXi+bRxlOYKDf8i327zG9eSTb8IJxvm3Zg==}
+
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
     engines: {node: '>= 0.8'}
@@ -814,6 +826,9 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
+  whatwg-fetch@3.6.20:
+    resolution: {integrity: sha512-EqhiFU6daOA8kpjOWTL0olhVOF3i7OrFzSYiGsEMB8GcXS+RrzauAERX65xMeNWVqxA6HXH2m69Z9LaKKdisfg==}
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -977,6 +992,11 @@ snapshots:
       - react-dom
       - svelte
       - vue
+
+  '@langchain/ollama@1.2.7(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))':
+    dependencies:
+      '@langchain/core': 1.1.48(openai@6.42.0(zod@3.25.76))
+      ollama: 0.6.3
 
   '@langchain/openai@1.4.7(@langchain/core@1.1.48(openai@6.42.0(zod@3.25.76)))':
     dependencies:
@@ -1320,6 +1340,10 @@ snapshots:
 
   object-inspect@1.13.4: {}
 
+  ollama@0.6.3:
+    dependencies:
+      whatwg-fetch: 3.6.20
+
   on-finished@2.4.1:
     dependencies:
       ee-first: 1.1.1
@@ -1522,6 +1546,8 @@ snapshots:
   uuid@14.0.0: {}
 
   vary@1.1.2: {}
+
+  whatwg-fetch@3.6.20: {}
 
   xtend@4.0.2: {}
 
