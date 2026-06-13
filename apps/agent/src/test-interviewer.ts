@@ -1,7 +1,7 @@
 // src/test-interviewer.ts
+import { buildChecklist, invokeWithMetrics } from "../utils";
 import { interviewerNode } from "./graph/nodes/interviewer";
 import { generateQuestion } from "./graph/nodes/question-generator";
-import { buildChecklist } from "./graph/nodes/setup";
 import type { InterviewStateType, Message } from "./graph/state";
 import { readFileSync } from "fs";
 
@@ -11,6 +11,9 @@ const jdText = readFileSync("./fixtures/jd.txt", "utf-8");
 
 const { question, strategy } = await generateQuestion(resumeText, jdText, "Accenture", "Senior .NET Engineer");
 const checklist = buildChecklist(question);
+
+
+
 
 const fakeMessages: Message[] = [
   { role: "interviewer", content: "We need an API gateway handling 10,000+ TPS for a fintech project. Where would you like to start?", phase: "requirements", timestamp: Date.now() },

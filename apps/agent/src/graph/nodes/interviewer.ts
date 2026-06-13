@@ -1,4 +1,4 @@
-import { stripThinkTags } from "../../../utils";
+import { invokeWithMetrics, stripThinkTags } from "../../../utils";
 import { interviewerModel } from "../../models";
 import type { InterviewStateType, InterviewStrategy, Message, Phase } from "../state";
 
@@ -16,6 +16,7 @@ const PHASE_PREFIX: Record<Phase, string> = {
 // ─────────────────────────────────────────────────────────
 // Phase-specific instruction blocks
 // ─────────────────────────────────────────────────────────
+
 
 const PHASE_INSTRUCTIONS: Record<Phase, string> = {
   requirements: `
@@ -85,7 +86,6 @@ SYSTEM IDENTITY:
 You are a senior engineer at ${strategy.companyContext}
 conducting a system design interview for a ${targetRole} position.
 You are SPEAKING DIRECTLY TO THE CANDIDATE, addressing them as "you".
-
 `.trim();
 }
 
@@ -226,22 +226,55 @@ function buildPrompt(state: InterviewStateType): string {
   ].join("\n\n");
 }
 
-// ─────────────────────────────────────────────────────────
-// interviewer node
-// ─────────────────────────────────────────────────────────
-//
-// Generates the interviewer's next message based on the current phase,
-// transcript, and coverage state. Does NOT call interrupt() — that is
-// wired in at the graph-assembly stage. For standalone testing, this
-// just returns the partial state update.
+/**
+ * **Interviewer node**
+ * Generates the interviewer's next message based on the current phase,
+ * transcript, and coverage state. Does NOT call interrupt() — that is
+ * wired in at the graph-assembly stage. For standalone testing, this
+ * just returns the partial state update.
+
+ * @param state 
+ * @returns 
+ */
+// export async function interviewerNode(
+//   state: InterviewStateType
+// ): Promise<Partial<InterviewStateType>> {
+//   const prompt = buildPrompt(state);
+
+//   const res = await interviewerModel.invoke(prompt);
+//   const content = stripThinkTags(res.content as string).replace(/^["']|["']$/g, "");
+
+//   const message: Message = {
+//     role: "interviewer",
+//     content,
+//     phase: state.currentPhase,
+//     timestamp: Date.now(),
+//   };
+
+//   return {
+//     messages: [message],
+//     turnCount: 1, // sum reducer -> increments total turn count
+//   };
+// }
+
+
 
 export async function interviewerNode(
   state: InterviewStateType
 ): Promise<Partial<InterviewStateType>> {
   const prompt = buildPrompt(state);
 
-  const res = await interviewerModel.invoke(prompt);
-  const content = stripThinkTags(res.content as string).replace(/^["']|["']$/g, "");
+  const { result, metric } = await invokeWithMetrics(
+    "interviewer",
+    interviewerModel,
+    prompt
+  );
+
+  console.log(metric);
+
+  const content = stripThinkTags(
+    result.content as string
+  ).replace(/^["']|["']$/g, "");
 
   const message: Message = {
     role: "interviewer",
@@ -252,6 +285,7 @@ export async function interviewerNode(
 
   return {
     messages: [message],
-    turnCount: 1, // sum reducer -> increments total turn count
+    turnCount: 1,
+    
   };
 }

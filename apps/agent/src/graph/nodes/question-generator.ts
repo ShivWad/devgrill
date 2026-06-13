@@ -1,11 +1,33 @@
-import { extractJson, stripThinkTags } from "../../../utils";
+import { extractJson, invokeWithMetrics, stripThinkTags } from "../../../utils";
 import { reasoningModel } from "../../models";
 import type { QuestionConfig, InterviewStrategy } from "../state";
 
-// ─────────────────────────────────────────────────────────
-// Stage 1 — analysis & candidate scenarios (free text)
-// ─────────────────────────────────────────────────────────
+export interface Stage1Result {
+  domain: {
+    industry: string;
+    reasoning: string;
+  };
+  gaps: {
+    name: string;
+    reason: string;
+  }[];
+  candidates: {
+    gap: string;
+    question: string;
+    hook: string;
+  }[];
+}
 
+/**
+ * Stage 1 prompt: Analyzes resume and JD.
+ * - Identifies gaps and hooks.
+ * - Generates top candidates for questions to ask.
+ * @param resumeText
+ * @param jdText
+ * @param targetCompany
+ * @param targetRole
+ * @returns
+ */
 const buildStage1Prompt = (
   resumeText: string,
   jdText: string,
@@ -28,7 +50,7 @@ TASK:
    domain experience, and years of experience.
 2. Analyze the job description: extract required skills, technical expectations,
    domain focus, and seniority signals.
-3. Identify the TOP 2-3 GAPS: things the job description requires that the resume
+3. Identify the TOP 3 GAPS: things the job description requires that the resume
    does not clearly demonstrate.
 4. Before proposing questions, identify: what kind of products/systems does
    ${targetCompany} actually build? If it's a consulting firm, what's the likely
@@ -36,7 +58,7 @@ TASK:
    if an edtech company like Pearson, focus on educational/assessment systems).
    Every candidate question below should be set in THIS inferred domain, not a
    generic textbook domain.
-5. For EACH gap, propose 2-3 DIFFERENT candidate system design questions that
+5. For EACH gap, propose 1 DIFFERENT candidate system design questions that
    would test that gap. Each candidate question must:
    - Connect to something specific in the resume (a foothold, not a cold start)
    - Be set in the domain you inferred in step 4
@@ -65,23 +87,67 @@ reasoning):
   -> "Design a notification system for 50 million users" (scales their
      exact experience)
 
-Think out loud. For each candidate question, briefly note: the gap it tests,
-the resume hook it connects to, the domain it's set in, and why it's NOT one
-of the generic templates listed above. There is no required output format for
-this step — just clear, well-reasoned analysis and a list of candidate
-questions with the notes described above.`;
+OUTPUT FORMAT
+
+Return ONLY valid JSON.
+
+Do not wrap in markdown.
+Do not use code fences.
+Do not include explanations outside the JSON.
+Do not include <think> tags.
+
+Schema:
+
+{
+  "domain": {
+    "industry": string,
+    "reasoning": string
+  },
+  "gaps": [
+    {
+      "name": string,
+      "reason": string
+    }
+  ],
+  "candidates": [
+    {
+      "gap": string,
+      "question": string,
+      "hook": string
+    }
+  ]
+}
+
+Rules:
+- Return exactly 2 gaps.
+- Return exactly 1 candidate question per gap.
+- Keep each question under 2 sentences.
+- Use the inferred domain.
+- No additional fields.
+`;
 };
 
 // ─────────────────────────────────────────────────────────
 // Stage 2 — selection & structured output (strict JSON)
 // ─────────────────────────────────────────────────────────
 
+/**
+ * Stage 2 prompt: takes the stage 2 prompt.
+ * - Selects the 1 best question from the top candidtes from stage 2.
+ * - Structures the output (JSON)
+ * @param resumeText
+ * @param jdText
+ * @param targetCompany
+ * @param targetRole
+ * @param stage1Analysis
+ * @returns
+ */
 const buildStage2Prompt = (
   resumeText: string,
   jdText: string,
   targetCompany: string,
   targetRole: string,
-  stage1Analysis: string,
+  stage1Analysis: Stage1Result,
 ): string => {
   return `You are finalizing a system design interview question based on prior analysis.
 
@@ -102,13 +168,11 @@ From the candidate questions above, select the SINGLE BEST one — the one
 that is most specific, most domain-grounded, and best tests a real gap while
 connecting to the candidate's actual experience. Do not invent a new question;
 choose from the candidates already proposed (you may refine wording/details).
-
 When selecting, prefer candidates that include concrete numbers, scale
 constraints, or domain-specific regulatory/operational details over more
 abstract ones. Also re-check: does your selected candidate resemble any
 item in the blocklist from the analysis step? If so, prefer a different
 candidate even if it requires more creative framing.
-
 Then produce the full question configuration and interview strategy.
 
 OUTPUT FORMAT:
@@ -185,7 +249,6 @@ candidates above. Do not copy this domain or content):
 }`;
 };
 
-
 // ─────────────────────────────────────────────────────────
 // Main function
 // ─────────────────────────────────────────────────────────
@@ -195,6 +258,15 @@ export interface QuestionGeneratorResult {
   strategy: InterviewStrategy;
 }
 
+/**
+ * Generates the question.
+ * Uses 2 stage buildStage1Prompt +  buildStage2Prompt
+ * @param resumeText
+ * @param jdText
+ * @param targetCompany
+ * @param targetRole
+ * @returns
+ */
 export const generateQuestion = async (
   resumeText: string,
   jdText: string,
@@ -202,23 +274,55 @@ export const generateQuestion = async (
   targetRole: string,
 ): Promise<QuestionGeneratorResult> => {
   // ── Stage 1: analysis + candidate scenarios ──
-  const stage1Prompt = buildStage1Prompt(resumeText, jdText, targetCompany, targetRole);
-  const stage1Res = await reasoningModel.invoke(stage1Prompt);
-  const stage1Analysis = stripThinkTags(stage1Res.content as string);
-
-  console.log("=== STAGE 1 ANALYSIS ===");
-  console.log(stage1Analysis);
-  console.log("========================\n");
-
-  // ── Stage 2: select + structure ──
-  const stage2Prompt = buildStage2Prompt(
+  const stage1Prompt = buildStage1Prompt(
     resumeText,
     jdText,
     targetCompany,
     targetRole,
-    stage1Analysis,
   );
-  const stage2Res = await reasoningModel.invoke(stage2Prompt);
+
+  const { result: stage1Res, metric: stage1Metric } = await invokeWithMetrics(
+    "stage_1_generate_question",
+    reasoningModel,
+    stage1Prompt,
+  );
+
+
+
+  let stage1Analysis: Stage1Result;
+  let stage2Prompt: string;
+
+  try {
+    stage1Analysis = JSON.parse(
+      extractJson(stage1Res.content as string),
+    ) as Stage1Result;
+  } catch (err) {
+    console.error("STAGE 1 RAW OUTPUT:");
+    console.error(stage1Res.content);
+  }
+
+
+  console.log("=====STAGE 1=======");
+  console.log(stage1Res.content as string);
+
+  // ── Stage 2: select + structure ──
+
+  stage2Prompt = buildStage2Prompt(
+    resumeText,
+    jdText,
+    targetCompany,
+    targetRole,
+    //@ts-ignore
+    JSON.stringify(stage1Analysis, null, 2),
+  );
+
+  const { result: stage2Res, metric: stage2Metric } = await invokeWithMetrics(
+    "stage_2_generate_question",
+    reasoningModel,
+    stage2Prompt,
+  );
+
+
   const raw = stage2Res.content as string;
 
   let parsed: QuestionGeneratorResult;
@@ -233,7 +337,9 @@ export const generateQuestion = async (
   if (!parsed.question || !parsed.strategy) {
     console.error("STAGE 2 RAW OUTPUT (missing question/strategy):");
     console.error(raw);
-    throw new Error("generateQuestion: response missing 'question' or 'strategy' key");
+    throw new Error(
+      "generateQuestion: response missing 'question' or 'strategy' key",
+    );
   }
 
   return parsed;

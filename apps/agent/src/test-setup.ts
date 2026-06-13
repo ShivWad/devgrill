@@ -1,9 +1,9 @@
 import { readFileSync } from "fs";
 // src/test-setup.ts
 import { generateQuestion } from "./graph/nodes/question-generator";
-import { setupNode, buildChecklist } from "./graph/nodes/setup";
+import { setupNode } from "./graph/nodes/setup";
 import type { InterviewStateType } from "./graph/state";
-
+import { buildChecklist } from "../utils";
 const resumeText = readFileSync("./fixtures/resume.txt", "utf-8");
 const jdText = readFileSync("./fixtures/jd.txt", "utf-8");
 
