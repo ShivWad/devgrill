@@ -163,69 +163,103 @@ export interface NodeMetric {
   totalTokens: number;
 }
 
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import type { AIMessage } from "@langchain/core/messages";
+
+// ─────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────
+
+export interface NodeMetric {
+  node: string;
+  durationMs: number;
+  inputTokens: number;
+  cachedTokens: number;       // DeepSeek prompt cache hits (reduces billed input cost)
+  outputTokens: number;
+  reasoningTokens: number;    // DeepSeek V4-Pro / R1 chain-of-thought tokens (billed as output)
+  totalTokens: number;
+}
+
+// ─────────────────────────────────────────────────────────
+// invokeWithMetrics
+// ─────────────────────────────────────────────────────────
+
 /**
- * Invokes an LLM and captures execution metrics for observability.
+ * Invokes a LangChain chat model and captures per-node execution metrics.
  *
- * Useful for tracking token consumption, latency, and cost on a
- * per-node basis within a LangGraph workflow.
+ * Captures:
+ * - Duration (wall-clock ms)
+ * - Input tokens (total prompt tokens sent)
+ * - Cached tokens (DeepSeek prompt cache hits — not billed at full rate)
+ * - Output tokens (generated tokens)
+ * - Reasoning tokens (DeepSeek V4-Pro / R1 thinking tokens, billed as output)
+ * - Total tokens
  *
- * The helper normalizes usage metadata across providers and returns
- * both the raw model response and a structured metrics object.
+ * Token source priority: LangChain's normalized `usage_metadata` (preferred),
+ * falling back to provider-specific `response_metadata.tokenUsage` for
+ * older LangChain versions or providers that don't populate usage_metadata.
  *
- * Example:
+ * @example
  * ```ts
  * const { result, metric } = await invokeWithMetrics(
- *   "question_generator",
+ *   "stage_1_generate_question",
  *   reasoningModel,
- *   prompt
+ *   prompt,
  * );
- *
- * console.log(metric.totalTokens);
+ * // metric.reasoningTokens shows how much DeepSeek V4-Pro spent "thinking"
+ * // metric.cachedTokens shows how much of the prompt was served from cache
  * ```
  *
- * @param nodeName Human-readable identifier for the calling node
- *                 (e.g. "stage_1_generate_question").
- * @param model LangChain chat model instance.
- * @param prompt Prompt string to send to the model.
- *
- * @returns Object containing:
- * - `result`: Raw model response returned by LangChain.
- * - `metric`: Normalized execution metrics including duration and token usage.
+ * @param nodeName  Human-readable identifier for this call (used in logs/tables).
+ * @param model     Any LangChain BaseChatModel instance.
+ * @param prompt    Prompt string to send to the model.
  */
 export async function invokeWithMetrics(
   nodeName: string,
-  model: any,
-  prompt: string
-) {
+  model: BaseChatModel,
+  prompt: string,
+): Promise<{ result: AIMessage; metric: NodeMetric }> {
   const started = performance.now();
+  const result = (await model.invoke(prompt)) as AIMessage;
+  const durationMs = Math.round(performance.now() - started);
 
-  const result = await model.invoke(prompt);
+  // Prefer LangChain's normalized usage_metadata; fall back to raw provider fields
+  const usage = result.usage_metadata;
+  const legacyUsage =
+    (result.response_metadata?.tokenUsage as Record<string, number>) ?? {};
 
-  const usage =
-    result.usage_metadata ??
-    result.response_metadata?.tokenUsage ??
-    {};
+  const inputTokens =
+    usage?.input_tokens ?? legacyUsage.promptTokens ?? 0;
+
+  const outputTokens =
+    usage?.output_tokens ?? legacyUsage.completionTokens ?? 0;
+
+  // DeepSeek-specific: cache hits live in input_token_details.cache_read
+  // Anthropic uses input_token_details.cache_read too — same field
+  const cachedTokens =
+    (usage?.input_token_details as { cache_read?: number } | undefined)
+      ?.cache_read ?? 0;
+
+  // Reasoning models (DeepSeek V4-Pro, R1, o1, etc.) expose chain-of-thought
+  // token count separately — these ARE billed as output tokens but useful
+  // to track independently (high reasoning token counts = expensive Stage 1 calls)
+  const reasoningTokens =
+    (usage?.output_token_details as { reasoning?: number } | undefined)
+      ?.reasoning ?? 0;
+
+  const totalTokens =
+    usage?.total_tokens ?? legacyUsage.totalTokens ?? inputTokens + outputTokens;
 
   const metric: NodeMetric = {
     node: nodeName,
-    durationMs: Math.round(performance.now() - started),
-    inputTokens:
-      usage.input_tokens ??
-      usage.prompt_tokens ??
-      0,
-    outputTokens:
-      usage.output_tokens ??
-      usage.completion_tokens ??
-      0,
-    totalTokens:
-      usage.total_tokens ??
-      0,
+    durationMs,
+    inputTokens,
+    cachedTokens,
+    outputTokens,
+    reasoningTokens,
+    totalTokens,
   };
 
-  console.log(metric);
-
-  return {
-    result,
-    metric,
-  };
+  console.table([metric]);
+  return { result, metric };
 }

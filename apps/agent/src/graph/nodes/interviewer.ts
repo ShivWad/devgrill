@@ -270,7 +270,6 @@ export async function interviewerNode(
     prompt
   );
 
-  console.log(metric);
 
   const content = stripThinkTags(
     result.content as string

@@ -7,13 +7,17 @@ import { ChatOllama } from "@langchain/ollama";
 // ─────────────────────────────────────────────────────────
 // API key is read from DEEPSEEK_API_KEY env var automatically.
 
-// Heavier reasoning model — question generator, judge
+/**
+ *  Heavier reasoning model — question generator, judge
+ */
 export const reasoningModel = new ChatDeepSeek({
   model: "deepseek-v4-pro",
   temperature: 0.3, // lower = more consistent JSON output
 });
 
-// Cheaper/faster model — interviewer conversational turns
+/**
+ * Cheaper/faster model — interviewer conversational turns
+ */
 export const interviewerModel = new ChatDeepSeek({
   model: "deepseek-v4-flash",
   temperature: 0.7,

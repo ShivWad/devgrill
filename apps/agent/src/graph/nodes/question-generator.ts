@@ -1,5 +1,5 @@
 import { extractJson, invokeWithMetrics, stripThinkTags } from "../../../utils";
-import { reasoningModel } from "../../models";
+import { interviewerModel, reasoningModel } from "../../models";
 import type { QuestionConfig, InterviewStrategy } from "../state";
 
 export interface Stage1Result {
@@ -7,12 +7,9 @@ export interface Stage1Result {
     industry: string;
     reasoning: string;
   };
-  gaps: {
-    name: string;
-    reason: string;
-  }[];
+  gaps: string[];
   candidates: {
-    gap: string;
+    gapIndex: number;
     question: string;
     hook: string;
   }[];
@@ -50,7 +47,7 @@ TASK:
    domain experience, and years of experience.
 2. Analyze the job description: extract required skills, technical expectations,
    domain focus, and seniority signals.
-3. Identify the TOP 3 GAPS: things the job description requires that the resume
+3. Identify the TOP 2 GAPS: things the job description requires that the resume
    does not clearly demonstrate.
 4. Before proposing questions, identify: what kind of products/systems does
    ${targetCompany} actually build? If it's a consulting firm, what's the likely
@@ -103,15 +100,10 @@ Schema:
     "industry": string,
     "reasoning": string
   },
-  "gaps": [
-    {
-      "name": string,
-      "reason": string
-    }
-  ],
+  "gaps": string[],
   "candidates": [
     {
-      "gap": string,
+      "gapIndex": int,
       "question": string,
       "hook": string
     }
@@ -119,11 +111,23 @@ Schema:
 }
 
 Rules:
-- Return exactly 2 gaps.
+- Return exactly 2 gaps. 
 - Return exactly 1 candidate question per gap.
 - Keep each question under 2 sentences.
 - Use the inferred domain.
 - No additional fields.
+
+Gap names must be short skill labels.
+
+Good gap names:
+- Event-driven architecture
+- Kubernetes
+- Distributed transactions
+
+Bad gap names:
+- No event-driven architecture experience
+- Limited Kubernetes exposure
+- Resume does not demonstrate Kubernetes
 `;
 };
 
@@ -147,7 +151,7 @@ const buildStage2Prompt = (
   jdText: string,
   targetCompany: string,
   targetRole: string,
-  stage1Analysis: Stage1Result,
+  stage1Analysis: string,
 ): string => {
   return `You are finalizing a system design interview question based on prior analysis.
 
@@ -287,8 +291,6 @@ export const generateQuestion = async (
     stage1Prompt,
   );
 
-
-
   let stage1Analysis: Stage1Result;
   let stage2Prompt: string;
 
@@ -297,10 +299,9 @@ export const generateQuestion = async (
       extractJson(stage1Res.content as string),
     ) as Stage1Result;
   } catch (err) {
-    console.error("STAGE 1 RAW OUTPUT:");
-    console.error(stage1Res.content);
+    console.error("STAGE 1 RAW OUTPUT:", stage1Res.content);
+    throw new Error(`generateQuestion: Stage 1 JSON parse failed — ${err}`);
   }
-
 
   console.log("=====STAGE 1=======");
   console.log(stage1Res.content as string);
@@ -312,16 +313,14 @@ export const generateQuestion = async (
     jdText,
     targetCompany,
     targetRole,
-    //@ts-ignore
     JSON.stringify(stage1Analysis, null, 2),
   );
 
   const { result: stage2Res, metric: stage2Metric } = await invokeWithMetrics(
     "stage_2_generate_question",
-    reasoningModel,
+    interviewerModel,
     stage2Prompt,
   );
-
 
   const raw = stage2Res.content as string;
 
