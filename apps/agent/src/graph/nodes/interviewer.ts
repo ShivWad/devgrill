@@ -1,6 +1,12 @@
+import { interrupt } from "@langchain/langgraph";
 import { invokeWithMetrics, stripThinkTags } from "../../../utils";
 import { interviewerModel } from "../../models";
-import type { InterviewStateType, InterviewStrategy, Message, Phase } from "../state";
+import type {
+  InterviewStateType,
+  InterviewStrategy,
+  Message,
+  Phase,
+} from "../state";
 
 // ─────────────────────────────────────────────────────────
 // Phase -> checklist key prefix
@@ -16,7 +22,6 @@ const PHASE_PREFIX: Record<Phase, string> = {
 // ─────────────────────────────────────────────────────────
 // Phase-specific instruction blocks
 // ─────────────────────────────────────────────────────────
-
 
 const PHASE_INSTRUCTIONS: Record<Phase, string> = {
   requirements: `
@@ -90,7 +95,10 @@ would you cut, and what would that cost you?"
 // Prompt section builders
 // ─────────────────────────────────────────────────────────
 
-function buildSystemIdentity(strategy: InterviewStrategy, targetRole: string): string {
+function buildSystemIdentity(
+  strategy: InterviewStrategy,
+  targetRole: string,
+): string {
   return `
 SYSTEM IDENTITY:
 You are a senior engineer at ${strategy.companyContext}
@@ -139,7 +147,11 @@ important thing to say next.
 `.trim();
 }
 
-function buildPhaseInstructions(phase: Phase, strategy: InterviewStrategy, deepDiveTargets: string[]): string {
+function buildPhaseInstructions(
+  phase: Phase,
+  strategy: InterviewStrategy,
+  deepDiveTargets: string[],
+): string {
   let instructions = PHASE_INSTRUCTIONS[phase];
 
   if (phase === "deep_dive") {
@@ -159,7 +171,10 @@ solution):
 `.trim();
 }
 
-function buildCoverageState(coveredItems: string[], uncoveredItems: string[]): string {
+function buildCoverageState(
+  coveredItems: string[],
+  uncoveredItems: string[],
+): string {
   return `
 COVERAGE STATE (this phase):
 Covered so far: ${coveredItems.join(", ") || "None"}
@@ -171,7 +186,9 @@ function buildTranscript(messages: Message[]): string {
   if (messages.length === 0) return "TRANSCRIPT SO FAR:\n(nothing yet)";
 
   const lines = messages.map((m) =>
-    m.role === "interviewer" ? `Interviewer: ${m.content}` : `Candidate: ${m.content}`
+    m.role === "interviewer"
+      ? `Interviewer: ${m.content}`
+      : `Candidate: ${m.content}`,
   );
 
   return `TRANSCRIPT SO FAR:\n${lines.join("\n")}`;
@@ -196,7 +213,7 @@ start designing.
 
 function splitCoverageByPhase(
   checklist: Record<string, boolean>,
-  phase: Phase
+  phase: Phase,
 ): { covered: string[]; uncovered: string[] } {
   const prefix = PHASE_PREFIX[phase];
   const covered: string[] = [];
@@ -215,13 +232,19 @@ function splitCoverageByPhase(
 // ─────────────────────────────────────────────────────────
 
 function buildPrompt(state: InterviewStateType): string {
-  const { question, strategy, currentPhase, messages, coverageChecklist } = state;
+  const { question, strategy, currentPhase, messages, coverageChecklist } =
+    state;
 
   if (!question || !strategy) {
-    throw new Error("interviewerNode: state.question/strategy must be set before this node runs");
+    throw new Error(
+      "interviewerNode: state.question/strategy must be set before this node runs",
+    );
   }
 
-  const { covered, uncovered } = splitCoverageByPhase(coverageChecklist, currentPhase);
+  const { covered, uncovered } = splitCoverageByPhase(
+    coverageChecklist,
+    currentPhase,
+  );
 
   return [
     buildSystemIdentity(strategy, state.targetRole),
@@ -267,33 +290,42 @@ function buildPrompt(state: InterviewStateType): string {
 //   };
 // }
 
-
-
 export async function interviewerNode(
-  state: InterviewStateType
+  state: InterviewStateType,
 ): Promise<Partial<InterviewStateType>> {
   const prompt = buildPrompt(state);
 
   const { result, metric } = await invokeWithMetrics(
     "interviewer",
     interviewerModel,
-    prompt
+    prompt,
   );
 
+  const content = stripThinkTags(result.content as string).replace(
+    /^["']|["']$/g,
+    "",
+  );
 
-  const content = stripThinkTags(
-    result.content as string
-  ).replace(/^["']|["']$/g, "");
-
-  const message: Message = {
+  const interviewerMessage: Message = {
     role: "interviewer",
     content,
     phase: state.currentPhase,
     timestamp: Date.now(),
   };
 
+  // Pause here — send message to cli.ts, wait for candidate response
+  const candidateResponse: string = interrupt({ message: content });
+
+  // Resume here — append both messages
+  const candidateMessage: Message = {
+    role: "candidate",
+    content: candidateResponse,
+    phase: state.currentPhase,
+    timestamp: Date.now(),
+  };
+
   return {
-    messages: [message],
+    messages: [interviewerMessage, candidateMessage],
     turnCount: 1,
   };
 }

@@ -1,4 +1,4 @@
-import { Phase, QuestionConfig } from "./src/graph/state";
+import { InterviewStateType, Phase, QuestionConfig } from "./src/graph/state";
 import { BaseMessage } from "@langchain/core/messages";
 
 /**
@@ -180,9 +180,19 @@ export interface NodeMetric {
   totalTokens: number;
 }
 
-// ─────────────────────────────────────────────────────────
-// invokeWithMetrics
-// ─────────────────────────────────────────────────────────
+/**
+ * 
+ * LangGraph calls this after phaseEvaluatorNode runs and uses
+ * the return value to decide which node to go to next.
+ * @param state 
+ * @returns 
+ */
+export function routeAfterEvaluator(
+  state: InterviewStateType,
+): "interviewer" | "judge" {
+  return state.interviewComplete ? "judge" : "interviewer";
+}
+
 
 /**
  * Invokes a LangChain chat model and captures per-node execution metrics.

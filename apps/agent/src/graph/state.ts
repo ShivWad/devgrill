@@ -17,39 +17,39 @@ export interface Message {
 
 // Output of the question_generator node
 export interface QuestionConfig {
-  title: string;                     // "Design a real-time order tracking system"
-  description: string;               // Full problem statement read to candidate
+  title: string; // "Design a real-time order tracking system"
+  description: string; // Full problem statement read to candidate
   difficulty: "mid" | "senior" | "staff";
-  whyThisQuestion: string;           // Gap-analysis rationale shown on /preparing
-  expectedClarifications: string[];  // Topics candidate should ask about
-  keyComponents: string[];           // Components a good answer includes
-  commonPitfalls: string[];          // Mistakes to watch for when scoring
-  deepDiveTargets: string[];         // Components worth drilling into
+  whyThisQuestion: string; // Gap-analysis rationale shown on /preparing
+  expectedClarifications: string[]; // Topics candidate should ask about
+  keyComponents: string[]; // Components a good answer includes
+  commonPitfalls: string[]; // Mistakes to watch for when scoring
+  deepDiveTargets: string[]; // Components worth drilling into
 }
 
 // Also produced by question_generator, alongside QuestionConfig
 export interface InterviewStrategy {
-  resumeStrengths: string[];         // Skills from resume relevant to this question
-  resumeGaps: string[];              // Skills the JD wants but resume doesn't show
-  experienceHooks: string[];         // Specific resume items the interviewer can reference
-  companyContext: string;            // What this company's interviewers tend to value
-  probingStrategy: string;           // What the deep-dive phase should focus on
+  resumeStrengths: string[]; // Skills from resume relevant to this question
+  resumeGaps: string[]; // Skills the JD wants but resume doesn't show
+  experienceHooks: string[]; // Specific resume items the interviewer can reference
+  companyContext: string; // What this company's interviewers tend to value
+  probingStrategy: string; // What the deep-dive phase should focus on
 }
 
 // Output of the judge node
 export interface RubricScores {
-  requirementsGathering: number;     // 0-5
+  requirementsGathering: number; // 0-5
   apiDesign: number;
   dataModeling: number;
   systemComponents: number;
   scalability: number;
   tradeoffs: number;
   communication: number;
-  overall: number;                   // 0-100 weighted
-  levelAssessment: string;           // e.g. "Meets senior bar"
-  roleReadiness: string;             // role-specific readiness summary
-  gapAnalysis: string;               // concrete skills to work on
-  resumeAdvice: string;              // how to better position experience
+  overall: number; // 0-100 weighted
+  levelAssessment: string; // e.g. "Meets senior bar"
+  roleReadiness: string; // role-specific readiness summary
+  gapAnalysis: string; // concrete skills to work on
+  resumeAdvice: string; // how to better position experience
 }
 
 export interface PhaseFeedback {
@@ -57,7 +57,7 @@ export interface PhaseFeedback {
   score: number;
   strengths: string[];
   gaps: string[];
-  specificQuotes: string[];          // short evidence excerpts from transcript
+  specificQuotes: string[]; // short evidence excerpts from transcript
 }
 
 // ─────────────────────────────────────────────────────────
@@ -160,6 +160,15 @@ export const InterviewState = Annotation.Root({
     reducer: (_, next) => next,
     default: () => null,
   }),
+
+
+  // ── Interview completion flag — set by phase_evaluator when scale phase ends ──
+  // The conditional edge routeAfterEvaluator reads this to decide
+  // whether to loop back to interviewer or route to judge.
+  interviewComplete: Annotation<boolean>({
+    reducer: (_, next) => next,
+    default: () => false,
+  })
 });
 
 // Convenience type — every node function should be typed as:

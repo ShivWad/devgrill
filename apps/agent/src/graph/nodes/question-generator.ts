@@ -1,6 +1,6 @@
 import { extractJson, invokeWithMetrics, stripThinkTags } from "../../../utils";
 import { interviewerModel, reasoningModel } from "../../models";
-import type { QuestionConfig, InterviewStrategy } from "../state";
+import type { QuestionConfig, InterviewStrategy, InterviewStateType } from "../state";
 
 export interface Stage1Result {
   domain: {
@@ -246,10 +246,6 @@ candidates above. Do not copy this domain or content):
 }`;
 };
 
-// ─────────────────────────────────────────────────────────
-// Main function
-// ─────────────────────────────────────────────────────────
-
 export interface QuestionGeneratorResult {
   question: QuestionConfig;
   strategy: InterviewStrategy;
@@ -334,3 +330,15 @@ export const generateQuestion = async (
 
   return parsed;
 };
+/**
+ * Generates question
+ * @param state 
+ * @returns 
+ */
+export async function questionGeneratorNode(
+  state: InterviewStateType
+): Promise<Partial<InterviewStateType>> {
+  const { resumeText, jdText, targetCompany, targetRole } = state;
+  const { question, strategy } = await generateQuestion(resumeText, jdText, targetCompany, targetRole);
+  return { question, strategy };
+}
