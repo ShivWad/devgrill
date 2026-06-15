@@ -20,7 +20,7 @@ export const reasoningModel = new ChatDeepSeek({
  */
 export const interviewerModel = new ChatDeepSeek({
   model: "deepseek-v4-flash",
-  temperature: 0.7,
+  temperature: 0.5,
 });
 
 // ─────────────────────────────────────────────────────────

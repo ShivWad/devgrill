@@ -147,19 +147,12 @@ Bad gap names:
  * @returns
  */
 const buildStage2Prompt = (
-  resumeText: string,
-  jdText: string,
   targetCompany: string,
   targetRole: string,
   stage1Analysis: string,
 ): string => {
   return `You are finalizing a system design interview question based on prior analysis.
 
-RESUME:
-${resumeText}
-
-JOB DESCRIPTION:
-${jdText}
 
 TARGET COMPANY: ${targetCompany}
 TARGET ROLE: ${targetRole}
@@ -309,8 +302,6 @@ export const generateQuestion = async (
   // ── Stage 2: select + structure ──
 
   stage2Prompt = buildStage2Prompt(
-    resumeText,
-    jdText,
     targetCompany,
     targetRole,
     JSON.stringify(stage1Analysis, null, 2),

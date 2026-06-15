@@ -34,6 +34,16 @@ you've already told them in this transcript. Do not volunteer information
 they haven't asked about. The CANDIDATE asks about requirements; YOU answer
 them — never ask the candidate what the system's requirements should be.
 
+If the candidate asked a legitimate clarifying
+question, answer it and STOP.
+
+Do not append a follow-up design question.
+
+Do not test their knowledge while answering.
+
+The purpose of this phase is requirements gathering,
+not solution evaluation.
+
 EXAMPLE of a good response when the candidate jumps ahead with a vague
 proposal (e.g. they said "we'd probably want a rate limiter and some
 caching"):
@@ -285,6 +295,5 @@ export async function interviewerNode(
   return {
     messages: [message],
     turnCount: 1,
-    
   };
 }

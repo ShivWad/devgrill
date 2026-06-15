@@ -1,0 +1,38 @@
+RandomName Wadhawan
+Full-Stack Engineer | React.js & .NET Specialist
+Delhi, India | sample@gmail.com | +91 sample | linkedin.com/in/sample-sample | sample.in
+ Professional Summary
+Results-driven Full-Stack Engineer with 4+ years of experience in the complete software development life cycle (SDLC). Expertise in building scalable applications using React.js, Node.js, and ASP.NET. Proven ability to deliver high-performance solutions, integrate RESTful APIs, and operate within an Agile/Scrum framework to enhance user experience and streamline workflows.
+
+ Work Experience
+Digitize Solutions, Gurugram	Dec 2021 - Present
+Software Engineer
+Replaced fully manual data processing workflows with automated .NET Web APIs and batch jobs, reducing processing time from 2–5 hours to under 10 minutes.
+Participated in requirement discussions and contributed to the design and architecture of new application features alongside project leads.
+Designed and contributed to 40+ new features by collaborating with stakeholders, including 6 major backend enhancements utilizing ASP.NET, SQL Server, Node.js, Postgres.
+Developed and maintained 4+ microservice APIs (ASP.NET), ensuring scalability and reliable service communication, actively participated in code reviews, and wrote testable, modular, well-documented code adhering to best practices.
+Designed SQL Server & PostgreSQL schemas from scratch (12+ tables), authored 15+ stored procedures, and implemented indexing strategies to optimize query performance.
+Integrated 3 external systems (Oracle CPQ, MuleSoft, Salesforce) with the client's system, streamlining data exchange and automating workflows.
+Identified and resolved critical performance bottlenecks in ASP.NET services, directly improving response times and system reliability.
+Built and deployed full-stack web applications using Express.js for backend APIs and React.js with Redux and TypeScript for state management and responsive front-end interfaces.
+Engineered 5+ high-performing, cross-platform React applications, optimized for seamless 3D configurations and delivering a pixel-perfect user experience across all devices.
+Digitize Solutions, Gurugram
+Software Developer Intern	Sep 2021 – Dec 2021
+Collaborated on the development and deployment of 50+ responsive ReactJS components, enhancing user experience across multiple projects.
+Integrated 3D configurators using the ThreeKit platform and seamlessly incorporated them into frontend technologies like ReactJS, HTML, and CSS for an interactive user experience.
+
+Skills
+
+
+Languages:	C#, JavaScript, TypeScript, SQL
+Frontend: React.js, React Hooks, Redux, Next.js, HTML, CSS, Responsive Design
+Databases: SQL Server, Postgres, NoSQL
+Backend: ASP.NET, .NET Core (.NET 6), MSTest, Node.js, Express.js, Microservices, REST APIs, Entity Framework Core, LINQ, Authentication/Authorization
+Tools: Git, GitHub, Jira, Docker, Azure, Postman, Swagger, Visual Studio, Claude Code, AI Code
+Methodologies: Agile/Scrum, OOP, SOLID, Design Patterns, Distributed Systems
+
+Education
+Chandigarh University            									Aug 2022-Aug 2024
+Master of Computer Applications 								CGPA: 8.60/10
+Jagannath International Management School							Aug 2018 – Aug 2021
+Bachelor’s in Computer Applications								CGPA: 8.29/10
