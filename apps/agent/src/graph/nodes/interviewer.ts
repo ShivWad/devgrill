@@ -263,8 +263,7 @@ function buildPrompt(state: InterviewStateType): string {
  * **Interviewer node**
  * Generates the interviewer's next message based on the current phase,
  * transcript, and coverage state. Does NOT call interrupt() — that is
- * wired in at the graph-assembly stage. For standalone testing, this
- * just returns the partial state update.
+ * wired in at the graph-assembly stage. 
 
  * @param state 
  * @returns 
@@ -313,19 +312,11 @@ export async function interviewerNode(
     timestamp: Date.now(),
   };
 
-  // Pause here — send message to cli.ts, wait for candidate response
-  const candidateResponse: string = interrupt({ message: content });
 
-  // Resume here — append both messages
-  const candidateMessage: Message = {
-    role: "candidate",
-    content: candidateResponse,
-    phase: state.currentPhase,
-    timestamp: Date.now(),
-  };
+  
 
   return {
-    messages: [interviewerMessage, candidateMessage],
+    messages: [interviewerMessage],
     turnCount: 1,
   };
 }

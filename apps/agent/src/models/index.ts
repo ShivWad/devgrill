@@ -23,6 +23,13 @@ export const interviewerModel = new ChatDeepSeek({
   temperature: 0.5,
 });
 
+
+export const judgeModel = new ChatDeepSeek({
+  model: "deepseek-v4-flash",
+  temperature: 0.1,  // near-deterministic
+});
+
+
 // ─────────────────────────────────────────────────────────
 // Ollama models — kept for quick local comparison/fallback testing
 // ─────────────────────────────────────────────────────────

@@ -37,6 +37,9 @@ export const extractJson = (raw: string): string => {
   return text;
 };
 
+
+
+
 /**
  * Removes any <think>...</think> blocks from model output.
  *
@@ -193,6 +196,80 @@ export function routeAfterEvaluator(
   return state.interviewComplete ? "judge" : "interviewer";
 }
 
+interface SessionAccumulator {
+  calls: NodeMetric[];
+  totalInputTokens: number;
+  totalCachedTokens: number;
+  totalOutputTokens: number;
+  totalReasoningTokens: number;
+  totalTokens: number;
+  totalDurationMs: number;
+}
+
+const session: SessionAccumulator = {
+  calls: [],
+  totalInputTokens: 0,
+  totalCachedTokens: 0,
+  totalOutputTokens: 0,
+  totalReasoningTokens: 0,
+  totalTokens: 0,
+  totalDurationMs: 0,
+};
+
+function accumulateMetric(metric: NodeMetric) {
+  session.calls.push(metric);
+  session.totalInputTokens += metric.inputTokens;
+  session.totalCachedTokens += metric.cachedTokens;
+  session.totalOutputTokens += metric.outputTokens;
+  session.totalReasoningTokens += metric.reasoningTokens;
+  session.totalTokens += metric.totalTokens;
+  session.totalDurationMs += metric.durationMs;
+}
+
+
+/**
+ * Logs input and output tokens of a single interview session
+ */
+export function printSessionSummary() {
+  const billableInput = session.totalInputTokens - session.totalCachedTokens;
+
+  console.log("\n╔══════════════════════════════════════════════╗");
+  console.log("║           SESSION TOKEN SUMMARY              ║");
+  console.log("╠══════════════════════════════════════════════╣");
+  console.log(`║  Total LLM calls      : ${String(session.calls.length).padEnd(20)}║`);
+  console.log(`║  Total duration       : ${(session.totalDurationMs / 1000).toFixed(1).padEnd(19)}s ║`);
+  console.log("╠══════════════════════════════════════════════╣");
+  console.log(`║  Input tokens         : ${String(session.totalInputTokens).padEnd(20)}║`);
+  console.log(`║    └─ cached          : ${String(session.totalCachedTokens).padEnd(20)}║`);
+  console.log(`║    └─ billable input  : ${String(billableInput).padEnd(20)}║`);
+  console.log(`║  Output tokens        : ${String(session.totalOutputTokens).padEnd(20)}║`);
+  console.log(`║    └─ reasoning       : ${String(session.totalReasoningTokens).padEnd(20)}║`);
+  console.log(`║  Total tokens         : ${String(session.totalTokens).padEnd(20)}║`);
+  console.log("╠══════════════════════════════════════════════╣");
+
+  // Per-node breakdown
+  const byNode = session.calls.reduce((acc, c) => {
+    if (!acc[c.node]) acc[c.node] = { calls: 0, totalTokens: 0, durationMs: 0 };
+    acc[c.node].calls += 1;
+    acc[c.node].totalTokens += c.totalTokens;
+    acc[c.node].durationMs += c.durationMs;
+    return acc;
+  }, {} as Record<string, { calls: number; totalTokens: number; durationMs: number }>);
+
+  console.log("║  Per-node breakdown:                         ║");
+  for (const [node, stats] of Object.entries(byNode)) {
+    const label = `${node} (×${stats.calls})`.padEnd(28);
+    const tokens = String(stats.totalTokens).padEnd(8);
+    const secs = `${(stats.durationMs / 1000).toFixed(1)}s`.padEnd(6);
+    console.log(`║    ${label} ${tokens} ${secs}  ║`);
+  }
+
+  console.log("╚══════════════════════════════════════════════╝\n");
+}
+
+
+
+
 
 /**
  * Invokes a LangChain chat model and captures per-node execution metrics.
@@ -224,52 +301,30 @@ export function routeAfterEvaluator(
  * @param model     Any LangChain BaseChatModel instance.
  * @param prompt    Prompt string to send to the model.
  */
+
 export async function invokeWithMetrics(
-  nodeName: string,
-  model: BaseChatModel,
+  node: string,
+  model: { invoke: (prompt: string) => Promise<{ content: unknown; usage_metadata?: { input_tokens?: number; output_tokens?: number; input_token_details?: { cache_read?: number }; output_token_details?: { reasoning?: number } } }> },
   prompt: string,
-): Promise<{ result: AIMessage; metric: NodeMetric }> {
-  const started = performance.now();
-  const result = (await model.invoke(prompt)) as AIMessage;
-  const durationMs = Math.round(performance.now() - started);
+) {
+  console.log(`Invoked: ${node}`);
+  const start = Date.now();
+  const result = await model.invoke(prompt);
+  const durationMs = Date.now() - start;
 
-  // Prefer LangChain's normalized usage_metadata; fall back to raw provider fields
-  const usage = result.usage_metadata;
-  const legacyUsage =
-    (result.response_metadata?.tokenUsage as Record<string, number>) ?? {};
-
-  const inputTokens =
-    usage?.input_tokens ?? legacyUsage.promptTokens ?? 0;
-
-  const outputTokens =
-    usage?.output_tokens ?? legacyUsage.completionTokens ?? 0;
-
-  // DeepSeek-specific: cache hits live in input_token_details.cache_read
-  // Anthropic uses input_token_details.cache_read too — same field
-  const cachedTokens =
-    (usage?.input_token_details as { cache_read?: number } | undefined)
-      ?.cache_read ?? 0;
-
-  // Reasoning models (DeepSeek V4-Pro, R1, o1, etc.) expose chain-of-thought
-  // token count separately — these ARE billed as output tokens but useful
-  // to track independently (high reasoning token counts = expensive Stage 1 calls)
-  const reasoningTokens =
-    (usage?.output_token_details as { reasoning?: number } | undefined)
-      ?.reasoning ?? 0;
-
-  const totalTokens =
-    usage?.total_tokens ?? legacyUsage.totalTokens ?? inputTokens + outputTokens;
-
+  const usage = result.usage_metadata ?? {};
   const metric: NodeMetric = {
-    node: nodeName,
+    node,
     durationMs,
-    inputTokens,
-    cachedTokens,
-    outputTokens,
-    reasoningTokens,
-    totalTokens,
+    inputTokens: usage.input_tokens ?? 0,
+    cachedTokens: usage.input_token_details?.cache_read ?? 0,
+    outputTokens: usage.output_tokens ?? 0,
+    reasoningTokens: usage.output_token_details?.reasoning ?? 0,
+    totalTokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
   };
 
   console.table([metric]);
+  accumulateMetric(metric);
+
   return { result, metric };
 }

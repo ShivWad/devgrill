@@ -328,6 +328,8 @@ export const generateQuestion = async (
     );
   }
 
+  console.log("QUESTION: ", parsed.question);
+
   return parsed;
 };
 /**

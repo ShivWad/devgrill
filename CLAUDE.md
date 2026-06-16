@@ -21,12 +21,14 @@ pnpm typecheck
 
 # Agent service (the only runnable app right now)
 cd apps/agent && tsx src/server.ts       # start server (when wired)
+cd apps/agent && tsx src/cli.ts          # run full interview end-to-end (auto-candidate via LLM)
 
 # Manual tests — no jest/vitest, run these directly
 cd apps/agent && tsx src/test-deepseek.ts          # verify model connectivity
 cd apps/agent && tsx src/test-generateQuestion.ts  # isolated question generator
 cd apps/agent && tsx src/test-setup.ts             # setup node + opening message
 cd apps/agent && tsx src/test-interviewer.ts       # interviewer across all phases
+cd apps/agent && tsx src/test-jude.ts              # judge node
 
 # DB migrations (Drizzle, from apps/web — future)
 pnpm --filter web db:push
@@ -47,21 +49,24 @@ Frontend communicates via SSE. `/api/interview/start` and `/api/interview/[id]/m
 ### LangGraph graph flow
 
 ```
-START → question_generator → setup → interviewer → interrupt → phase_evaluator
-                                        ▲                            │
-                                        │    (stay / advance)        │
-                                        └────────────────────────────┘
-                                                                     │ (all phases done)
-                                                                     ▼
-                                                          judge → report → END
+START → question_generator → setup → interviewer → human_input → phase_evaluator
+                                        ▲                               │
+                                        │       (stay / advance)        │
+                                        └───────────────────────────────┘
+                                                                        │ (all phases done)
+                                                                        ▼
+                                                             judge → report_generator → END
 ```
 
-7 nodes total. **Implementation status:**
+8 nodes total. **Implementation status:**
 - ✅ `question_generator` (`apps/agent/src/graph/nodes/question-generator.ts`)
 - ✅ `setup` (`apps/agent/src/graph/nodes/setup.ts`)
-- ✅ `interviewer` (`apps/agent/src/graph/nodes/interviewer.ts`) — standalone only, `interrupt()` wired at graph-assembly stage
-- ❌ `interrupt`, `phase_evaluator`, `judge`, `report_generator` — not yet coded
-- ❌ Graph assembly (StateGraph compilation, edge definitions) — not yet done
+- ✅ `interviewer` (`apps/agent/src/graph/nodes/interviewer.ts`)
+- ✅ `human_input` (`apps/agent/src/graph/nodes/human-input.ts`) — calls `interrupt()`, collects candidate response
+- ✅ `phase_evaluator` (`apps/agent/src/graph/nodes/phase-evaluator.ts`) — deterministic turn-count logic; LLM coverage check is TODO
+- ✅ `judge` (`apps/agent/src/graph/nodes/judge.ts`) — `judgeModel` scores 7 rubric categories + per-phase feedback
+- ✅ `report_generator` (`apps/agent/src/graph/nodes/report-generator.ts`) — pure formatting, no LLM, produces markdown report
+- ✅ Graph assembly (`apps/agent/src/graph/graph.ts`) — StateGraph compiled with `MemorySaver` checkpointer
 
 State lives in `apps/agent/src/graph/state.ts` as `LangGraph Annotation.Root`. `messages` and `phaseFeedback` use append reducers; all other fields use replace reducers.
 
@@ -71,8 +76,9 @@ Interview has 4 phases: `requirements` → `design` → `deep_dive` → `scale`.
 
 ```typescript
 // apps/agent/src/models/index.ts
-reasoningModel   // ChatDeepSeek({ model: "deepseek-v4-pro",    temperature: 0.3 })
-interviewerModel // ChatDeepSeek({ model: "deepseek-v4-flash",  temperature: 0.5 })
+reasoningModel   // ChatDeepSeek({ model: "deepseek-v4-pro",   temperature: 0.3 }) — question generator
+interviewerModel // ChatDeepSeek({ model: "deepseek-v4-flash", temperature: 0.5 }) — interviewer turns + CLI auto-candidate
+judgeModel       // ChatDeepSeek({ model: "deepseek-v4-flash", temperature: 0.1 }) — near-deterministic scoring
 // Local fallbacks also exported: reasoningModelLocal, interviewerModelLocal (Ollama)
 ```
 
@@ -116,6 +122,8 @@ Key exports used across nodes and tests:
 | `stripThinkTags(raw)` | Removes `<think>...</think>` blocks |
 | `slugify(text)` | `text → lowercase_underscore_slug` for checklist keys |
 | `emptyPhaseNotes()` | Returns `{requirements: "", design: "", deep_dive: "", scale: ""}` |
+| `routeAfterEvaluator(state)` | Conditional edge fn — returns `"interviewer"` or `"judge"` based on `interviewComplete` |
+| `printSessionSummary()` | Prints aggregated token/duration metrics for all nodes in the session |
 
 `NodeMetric` type captures: `node`, `durationMs`, `inputTokens`, `cachedTokens`, `outputTokens`, `reasoningTokens`, `totalTokens`.
 
@@ -139,8 +147,8 @@ Internal only (Next.js calls these, not the browser):
 
 ## Build Phases
 
-- **Phase 1** ✅ (mostly): question_generator + setup + interviewer nodes, manual test scripts
-- **Phase 1 remaining**: graph assembly (StateGraph compilation, edges, interrupt wiring), Express server routes
+- **Phase 1** ✅: All 8 nodes implemented, graph assembled, CLI runner working (`src/cli.ts`)
+- **Phase 1 remaining**: Express server routes (`POST /graph/invoke`, `POST /graph/resume`, etc.), LLM-based phase evaluator coverage check
 - **Phase 2**: UI + file upload (Next.js)
-- **Phase 3**: scoring (judge node) + reports (report_generator node)
+- **Phase 3**: Postgres checkpointing swap (replace `MemorySaver` with `@langchain/langgraph-checkpoint-postgres`)
 - **Phase 4**: polish + deploy
