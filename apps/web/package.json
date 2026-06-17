@@ -2,13 +2,26 @@
   "name": "@devgrill/web",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "echo 'TODO: next dev'",
-    "build": "echo 'TODO: next build'",
-    "lint": "echo 'TODO: next lint'",
-    "typecheck": "echo 'TODO: tsc --noEmit'"
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@clerk/nextjs": "^7.5.3",
+    "@neondatabase/serverless": "^1.1.0",
+    "next": "^15.3.3",
+    "pdf-parse": "^2.4.5",
+    "pdfjs-dist": "^6.0.227",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^5"
+  }
 }

@@ -1,8 +1,10 @@
 import "dotenv/config";
 import * as readline from "readline/promises";
 import { readFileSync, writeFileSync } from "fs";
-import { Command, isGraphInterrupt } from "@langchain/langgraph";
-import { compiledGraph } from "./graph/graph";
+import { Command, isGraphInterrupt, MemorySaver } from "@langchain/langgraph";
+import { graph } from "./graph/graph";
+
+const compiledGraph = graph.compile({ checkpointer: new MemorySaver() });
 import { printSessionSummary } from "../utils";
 import { interviewerModel } from "./models";
 

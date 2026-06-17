@@ -292,9 +292,6 @@ export const generateQuestion = async (
     throw new Error(`generateQuestion: Stage 1 JSON parse failed — ${err}`);
   }
 
-  console.log("=====STAGE 1=======");
-  console.log(stage1Res.content as string);
-
   // ── Stage 2: select + structure ──
 
   stage2Prompt = buildStage2Prompt(

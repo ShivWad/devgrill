@@ -1,4 +1,4 @@
-import { StateGraph, START, END, MemorySaver } from "@langchain/langgraph";
+import { StateGraph, START, END } from "@langchain/langgraph";
 import { InterviewState } from "./state";
 import { questionGeneratorNode } from "./nodes/question-generator";
 import { setupNode } from "./nodes/setup";
@@ -9,9 +9,7 @@ import { routeAfterEvaluator } from "../../utils";
 import { humanInputNode } from "./nodes/human-input";
 import { reportGeneratorNode } from "./nodes/report-generator";
 
-const checkpointer = new MemorySaver();
-
-const graph = new StateGraph(InterviewState)
+export const graph = new StateGraph(InterviewState)
   .addNode("question_generator", questionGeneratorNode)
   .addNode("setup", setupNode)
   .addNode("interviewer", interviewerNode)
@@ -29,6 +27,4 @@ const graph = new StateGraph(InterviewState)
     judge: "judge",
   })
   .addEdge("judge", "report_generator")
-  .addEdge("report_generator",END);
-
-export const compiledGraph = graph.compile({ checkpointer });
+  .addEdge("report_generator", END);
