@@ -2,20 +2,10 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
-import sql from '@/lib/db'
-import type { RubricScores, PhaseFeedback } from '@devgrill/shared'
-
-type InterviewRow = {
-  id: string
-  question_title: string | null
-  question_description: string | null
-  scores: RubricScores | null
-  phase_feedback: PhaseFeedback[] | null
-  report_markdown: string | null
-  target_role: string | null
-  target_company: string | null
-  created_at: string
-}
+import { db } from '@/lib/db'
+import { interviews } from '@/lib/schema'
+import { eq, and } from 'drizzle-orm'
+import type { RubricScores } from '@devgrill/shared'
 
 function ScoreBar({ label, value, max = 5 }: { label: string; value: number; max?: number }) {
   const pct = (value / max) * 100
@@ -48,20 +38,28 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
   if (!userId) redirect('/sign-in')
 
   const { id } = await params
-  const rows = (await sql`
-    SELECT id, question_title, question_description, scores, phase_feedback,
-           report_markdown, target_role, target_company, created_at
-    FROM interviews
-    WHERE id = ${id} AND user_id = ${userId}
-    LIMIT 1
-  `) as InterviewRow[]
+  const rows = await db
+    .select({
+      id: interviews.id,
+      questionTitle: interviews.questionTitle,
+      questionDescription: interviews.questionDescription,
+      scores: interviews.scores,
+      phaseFeedback: interviews.phaseFeedback,
+      reportMarkdown: interviews.reportMarkdown,
+      targetRole: interviews.targetRole,
+      targetCompany: interviews.targetCompany,
+      createdAt: interviews.createdAt,
+    })
+    .from(interviews)
+    .where(and(eq(interviews.id, id), eq(interviews.userId, userId)))
+    .limit(1)
 
   if (rows.length === 0) notFound()
   const row = rows[0]
 
-  const scores: RubricScores | null = row.scores
-  const phaseFeedback: PhaseFeedback[] = row.phase_feedback ?? []
-  const date = new Date(row.created_at).toLocaleDateString('en-US', {
+  const scores = row.scores ?? null
+  const phaseFeedback = row.phaseFeedback ?? []
+  const date = new Date(row.createdAt).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
   })
 
@@ -81,14 +79,14 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
           <div style={{ fontSize: 12, color: '#555', marginBottom: 10, fontFamily: 'monospace', letterSpacing: '.1em', textTransform: 'uppercase' }}>
-            {[row.target_role, row.target_company].filter(Boolean).join(' · ')}{' · '}{date}
+            {[row.targetRole, row.targetCompany].filter(Boolean).join(' · ')}{' · '}{date}
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
-            {row.question_title ?? 'Interview report'}
+            {row.questionTitle ?? 'Interview report'}
           </h1>
-          {row.question_description && (
+          {row.questionDescription && (
             <p style={{ fontSize: 14, color: '#888', marginTop: 12, lineHeight: 1.6 }}>
-              {row.question_description}
+              {row.questionDescription}
             </p>
           )}
         </div>

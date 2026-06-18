@@ -2,13 +2,14 @@ import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
 import { UserButton } from '@clerk/nextjs'
 import ChatDemo from '@/components/ChatDemo'
+import MrGrillSection from '@/components/MrGrillSection'
 
 export default async function HomePage() {
   const { userId } = await auth()
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
       {/* ── Nav ── */}
-      <nav style={{
+      <nav className="lp-nav" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -33,9 +34,8 @@ export default async function HomePage() {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
           <div className="nav-links" style={{ display: 'flex', gap: 26, fontSize: 14, color: '#8f8f8f' }}>
-            <span className="nav-link">Product</span>
-            <span className="nav-link">How it works</span>
-            <span className="nav-link">Pricing</span>
+            <a href="#how-it-works" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">How it works</a>
+            <Link href="/pricing" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">Pricing</Link>
             {!userId && (
               <Link href="/sign-in" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">
                 Sign in
@@ -228,8 +228,142 @@ export default async function HomePage() {
 
       </div>
 
+      {/* ── How it works ── */}
+      <section id="how-it-works" style={{ borderTop: '1px solid #161616', padding: '88px 24px 80px' }}>
+        <div style={{ maxWidth: 1140, margin: '0 auto' }}>
+
+          {/* Section header */}
+          <div style={{ marginBottom: 52 }}>
+            <div style={{
+              fontFamily: "'Geist Mono', monospace",
+              fontSize: 12,
+              letterSpacing: '.2em',
+              textTransform: 'uppercase',
+              color: 'var(--accent)',
+              marginBottom: 18,
+            }}>
+              How it works
+            </div>
+            <h2 style={{
+              fontSize: 36,
+              fontWeight: 700,
+              letterSpacing: '-0.03em',
+              color: '#efefef',
+              marginBottom: 18,
+              lineHeight: 1.12,
+            }}>
+              Three steps. One honest session.
+            </h2>
+            {/* Differentiation callout */}
+            <p style={{
+              fontSize: 14.5,
+              lineHeight: 1.7,
+              color: '#525252',
+              maxWidth: 620,
+              padding: '14px 18px',
+              background: '#0d0d0d',
+              border: '1px solid #1a1a1a',
+              borderLeft: '2px solid rgba(249,115,22,0.4)',
+              borderRadius: 10,
+            }}>
+              Unlike generic mock interviews, DevGrill generates a question that sits at the
+              intersection of what you know and what the JD requires — every time.
+            </p>
+          </div>
+
+          {/* Step cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+
+            {/* Step 1 */}
+            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {/* Upload icon */}
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M7.5 1v8M4.5 4L7.5 1l3 3M2 10v3a1 1 0 001 1h9a1 1 0 001-1v-3" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 01</span>
+              </div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+                Upload your resume and job description
+              </h3>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+                Paste the JD you applied to and upload your resume. DevGrill reads both and
+                identifies exactly where your experience falls short of what the role requires.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {/* Chat icon */}
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <path d="M2 2h11a1 1 0 011 1v7a1 1 0 01-1 1H8l-3 2v-2H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="var(--accent)" strokeWidth="1.4" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 02</span>
+              </div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+                Get grilled by Mr. Grill
+              </h3>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+                A personalized system design interview based on your actual skill gaps — not
+                generic questions. Four phases: requirements, design, deep dive, and scale.
+                Mr. Grill doesn&rsquo;t let you off easy.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {/* Score icon */}
+                  <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                    <rect x="1" y="9" width="3" height="5" rx="1" fill="var(--accent)" opacity=".5"/>
+                    <rect x="6" y="5" width="3" height="9" rx="1" fill="var(--accent)" opacity=".75"/>
+                    <rect x="11" y="1" width="3" height="13" rx="1" fill="var(--accent)"/>
+                  </svg>
+                </div>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 03</span>
+              </div>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+                See your honest score
+              </h3>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+                A detailed report with phase-by-phase scores, specific quotes from your answers
+                as evidence, gap analysis, and resume advice tailored to the role you&rsquo;re targeting.
+              </p>
+            </div>
+
+          </div>
+
+          {/* Footer note */}
+          <p style={{ marginTop: 28, fontSize: 13.5, color: '#3e3e3e', textAlign: 'center', lineHeight: 1.6 }}>
+            The whole interview takes 20–30 minutes. The feedback tells you exactly what to work on before the real thing.
+          </p>
+
+        </div>
+      </section>
+
+      {/* ── Mr. Grill introduction ── */}
+      <MrGrillSection />
+
       {/* ── Footer ── */}
-      <footer style={{
+      <footer className="lp-footer" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -246,8 +380,7 @@ export default async function HomePage() {
           <span style={{ fontSize: 13, color: '#5a5a5a', marginLeft: 6 }}>Get grilled. Get hired.</span>
         </div>
         <div style={{ display: 'flex', gap: 22, fontSize: 13, color: '#6e6e6e' }}>
-          <span className="nav-link">Product</span>
-          <span className="nav-link">Pricing</span>
+          <Link href="/pricing" style={{ color: '#6e6e6e', textDecoration: 'none' }} className="nav-link">Pricing</Link>
           <span className="nav-link">Docs</span>
           <span style={{ color: '#4a4a4a' }}>© 2026</span>
         </div>

@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json()
   const res = await fetch(`${AGENT}/graph/auto-candidate`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
     body: JSON.stringify(body),
   })
   const data = await res.json()

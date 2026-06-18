@@ -5,7 +5,7 @@ import { setupNode } from "./nodes/setup";
 import { interviewerNode } from "./nodes/interviewer";
 import { phaseEvaluatorNode } from "./nodes/phase-evaluator";
 import { judgeNode } from "./nodes/judge";
-import { routeAfterEvaluator } from "../../utils";
+import { routeAfterEvaluator } from "../utils/routing";
 import { humanInputNode } from "./nodes/human-input";
 import { reportGeneratorNode } from "./nodes/report-generator";
 

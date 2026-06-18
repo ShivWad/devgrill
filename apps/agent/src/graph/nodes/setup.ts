@@ -1,4 +1,5 @@
-import { buildChecklist, emptyPhaseNotes, stripThinkTags } from "../../../utils";
+import { buildChecklist, emptyPhaseNotes } from "../../utils/checklist";
+import { stripThinkTags } from "../../utils/text";
 import { interviewerModel } from "../../models";
 import type { InterviewStateType, Message, Phase, QuestionConfig } from "../state";
 

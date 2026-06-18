@@ -64,7 +64,7 @@ export default function ChatDemo() {
   const isYouTyping = nextRole === 'you'
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '18px 36px 8px' }}>
+    <div className="chat-demo-wrap" style={{ display: 'flex', justifyContent: 'center', padding: '18px 36px 8px' }}>
       <div style={{
         width: '100%',
         maxWidth: 580,
@@ -97,7 +97,7 @@ export default function ChatDemo() {
         </div>
 
         {/* messages */}
-        <div style={{
+        <div className="chat-demo-messages" style={{
           height: 330,
           padding: 20,
           display: 'flex',

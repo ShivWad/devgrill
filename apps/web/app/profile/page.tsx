@@ -2,37 +2,45 @@ import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
-import sql from '@/lib/db'
+import { db } from '@/lib/db'
+import { interviews } from '@/lib/schema'
+import { eq, isNull, isNotNull, desc, and } from 'drizzle-orm'
 
-type InterviewRow = {
-  id: string
-  thread_id: string
-  question_title: string | null
-  target_role: string | null
-  target_company: string | null
-  scores: { overall?: number } | null
-  created_at: string
-}
 
 export default async function ProfilePage() {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
 
-  const active = (await sql`
-    SELECT id, thread_id, question_title, target_role, target_company, created_at
-    FROM interviews
-    WHERE user_id = ${userId} AND scores IS NULL
-    ORDER BY created_at DESC
-    LIMIT 20
-  `) as InterviewRow[]
+  const [active, completed] = await Promise.all([
+    db
+      .select({
+        id: interviews.id,
+        thread_id: interviews.threadId,
+        question_title: interviews.questionTitle,
+        target_role: interviews.targetRole,
+        target_company: interviews.targetCompany,
+        created_at: interviews.createdAt,
+      })
+      .from(interviews)
+      .where(and(eq(interviews.userId, userId), isNull(interviews.scores)))
+      .orderBy(desc(interviews.createdAt))
+      .limit(20),
 
-  const completed = (await sql`
-    SELECT id, thread_id, question_title, target_role, target_company, scores, created_at
-    FROM interviews
-    WHERE user_id = ${userId} AND scores IS NOT NULL
-    ORDER BY created_at DESC
-    LIMIT 50
-  `) as InterviewRow[]
+    db
+      .select({
+        id: interviews.id,
+        thread_id: interviews.threadId,
+        question_title: interviews.questionTitle,
+        target_role: interviews.targetRole,
+        target_company: interviews.targetCompany,
+        scores: interviews.scores,
+        created_at: interviews.createdAt,
+      })
+      .from(interviews)
+      .where(and(eq(interviews.userId, userId), isNotNull(interviews.scores)))
+      .orderBy(desc(interviews.createdAt))
+      .limit(50),
+  ])
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fafafa' }}>
