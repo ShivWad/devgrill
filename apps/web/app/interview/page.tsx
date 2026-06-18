@@ -5,31 +5,30 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
 
-type Phase = 'requirements' | 'design' | 'deep_dive' | 'scale'
+import type { Phase, RubricScores, PhaseFeedback } from '@devgrill/shared'
+
+const GLOBAL_STYLES = `
+  @keyframes breathe {
+    0%, 100% { transform: scale(0.7); opacity: 0; }
+    50% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes breatheCore {
+    0%, 100% { box-shadow: 0 0 10px 2px var(--accent-line); }
+    50% { box-shadow: 0 0 28px 8px var(--accent-line); }
+  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes dotPulse { 0%, 80%, 100% { transform: scale(0.7); opacity: 0.4; } 40% { transform: scale(1); opacity: 1; } }
+  @media (max-width: 640px) {
+    .phase-pip--hidden-mobile { display: none !important; }
+    .chat-messages-inner { padding: 16px 12px !important; }
+    .chat-input-bar { padding: 10px 12px !important; }
+    .setup-role-grid { grid-template-columns: 1fr !important; }
+    .chat-nav-right { gap: 4px !important; }
+    .question-nav-btn { display: none !important; }
+  }
+`
+
 type View = 'setup' | 'loading' | 'chat' | 'complete'
-
-type RubricScores = {
-  requirementsGathering: number
-  apiDesign: number
-  dataModeling: number
-  systemComponents: number
-  scalability: number
-  tradeoffs: number
-  communication: number
-  overall: number
-  levelAssessment: string
-  roleReadiness: string
-  gapAnalysis: string
-  resumeAdvice: string
-}
-
-type PhaseFeedback = {
-  phase: Phase
-  score: number
-  strengths: string[]
-  gaps: string[]
-  specificQuotes: string[]
-}
 
 type TurnResponse = {
   phase: Phase
@@ -98,11 +97,12 @@ function Nav({ right }: { right?: React.ReactNode }) {
 
 // ── Loading screen ────────────────────────────────────────────────────────────
 
-function LoadingView() {
+function LoadingView({ resuming = false }: { resuming?: boolean }) {
   const [idx, setIdx] = useState(0)
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
+    if (resuming) return
     let fadeOut: ReturnType<typeof setTimeout>
     const tick = setInterval(() => {
       setVisible(false)
@@ -112,10 +112,11 @@ function LoadingView() {
       }, 350)
     }, 3000)
     return () => { clearInterval(tick); clearTimeout(fadeOut) }
-  }, [])
+  }, [resuming])
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>
+      <style>{GLOBAL_STYLES}</style>
       <Nav right={<UserButton />} />
       <div style={{
         flex: 1,
@@ -126,32 +127,61 @@ function LoadingView() {
         gap: 28,
         padding: '40px 24px',
       }}>
-        <div style={{
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          border: '2px solid #222',
-          borderTopColor: 'var(--accent)',
-          animation: 'spin 0.9s linear infinite',
-        }} />
+        <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {/* outer aura rings */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            borderRadius: '50%',
+            background: 'var(--accent-soft)',
+            animation: 'breathe 2.4s ease-in-out infinite',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 8,
+            borderRadius: '50%',
+            background: 'var(--accent-soft)',
+            animation: 'breathe 2.4s ease-in-out infinite 0.4s',
+          }} />
+          {/* core dot */}
+          <div style={{
+            position: 'relative',
+            width: 14,
+            height: 14,
+            borderRadius: '50%',
+            background: 'var(--accent)',
+            boxShadow: '0 0 20px 4px var(--accent-line)',
+            animation: 'breatheCore 2.4s ease-in-out infinite',
+          }} />
+        </div>
         <div style={{ textAlign: 'center', maxWidth: 360 }}>
-          <p style={{
-            fontSize: 16,
-            fontWeight: 500,
-            color: '#e0e0e0',
-            lineHeight: 1.5,
-            opacity: visible ? 1 : 0,
-            transform: visible ? 'translateY(0)' : 'translateY(6px)',
-            transition: 'opacity 0.35s ease, transform 0.35s ease',
-          }}>
-            {LOADING_MSGS[idx]}
-          </p>
-          <p style={{ fontSize: 13, color: '#555', marginTop: 8 }}>
-            Question generation usually takes 20–40 s.
-          </p>
+          {resuming ? (
+            <>
+              <p style={{ fontSize: 16, fontWeight: 500, color: '#e0e0e0', lineHeight: 1.5 }}>
+                Calling Mr. Grill back…
+              </p>
+              <p style={{ fontSize: 13, color: '#555', marginTop: 8 }}>
+                Restoring your session.
+              </p>
+            </>
+          ) : (
+            <>
+              <p style={{
+                fontSize: 16,
+                fontWeight: 500,
+                color: '#e0e0e0',
+                lineHeight: 1.5,
+                opacity: visible ? 1 : 0,
+                transform: visible ? 'translateY(0)' : 'translateY(6px)',
+                transition: 'opacity 0.35s ease, transform 0.35s ease',
+              }}>
+                {LOADING_MSGS[idx]}
+              </p>
+              <p style={{ fontSize: 13, color: '#555', marginTop: 8 }}>
+                Question generation usually takes 20–40 s.
+              </p>
+            </>
+          )}
         </div>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
@@ -213,6 +243,7 @@ function SetupView(p: SetupProps) {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>
+      <style>{GLOBAL_STYLES}</style>
       <Nav right={<UserButton />} />
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '48px 24px 80px' }}>
         <div style={{ width: '100%', maxWidth: 620 }}>
@@ -283,7 +314,7 @@ function SetupView(p: SetupProps) {
           </div>
 
           {/* Role + Company */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 28 }}>
+          <div className="setup-role-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 28 }}>
             <div>
               <label style={label}>Target role <span style={{ color: '#555', fontWeight: 400 }}>(optional)</span></label>
               <input
@@ -370,54 +401,14 @@ function ChatView(p: ChatProps) {
 
   return (
     <div style={{ height: '100vh', background: '#0a0a0a', display: 'flex', flexDirection: 'column' }}>
-      {/* question modal */}
-      {p.questionOpen && p.questionText && (
-        <div
-          onClick={p.onToggleQuestion}
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 100, padding: '24px',
-          }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: '#111', border: '1px solid #252525',
-              borderRadius: 16, padding: '28px 32px',
-              maxWidth: 620, width: '100%', maxHeight: '72vh', overflowY: 'auto',
-              boxShadow: '0 40px 80px -20px rgba(0,0,0,0.9)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent-line)' }} />
-                <span style={{
-                  fontFamily: "'Geist Mono', monospace", fontSize: 11,
-                  letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--accent)',
-                }}>
-                  Your Question
-                </span>
-              </div>
-              <button
-                onClick={p.onToggleQuestion}
-                style={{ background: 'none', border: 'none', color: '#555', fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: '0 4px' }}
-              >
-                ×
-              </button>
-            </div>
-            <p style={{ fontSize: 15, lineHeight: 1.75, color: '#d8d8d8', whiteSpace: 'pre-wrap', margin: 0 }}>
-              {p.questionText}
-            </p>
-          </div>
-        </div>
-      )}
+      <style>{GLOBAL_STYLES}</style>
 
       {/* header */}
       <Nav right={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="chat-nav-right" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {p.questionText && (
             <button
+              className="question-nav-btn"
               onClick={p.onToggleQuestion}
               style={{
                 fontFamily: "'Geist Mono', monospace",
@@ -436,21 +427,25 @@ function ChatView(p: ChatProps) {
             </button>
           )}
           {PHASES.map((ph, i) => (
-            <div key={ph} style={{
-              fontFamily: "'Geist Mono', monospace",
-              fontSize: 11,
-              padding: '4px 10px',
-              borderRadius: 6,
-              background: i === phaseIdx ? 'var(--accent-soft)' : 'transparent',
-              border: `1px solid ${i === phaseIdx ? 'var(--accent-line)' : 'transparent'}`,
-              color: i === phaseIdx ? 'var(--accent)' : i < phaseIdx ? '#4a4a4a' : '#555',
-              fontWeight: i === phaseIdx ? 600 : 400,
-              transition: 'all 0.2s',
-            }}>
+            <div
+              key={ph}
+              className={`phase-pip${i !== phaseIdx ? ' phase-pip--hidden-mobile' : ''}`}
+              style={{
+                fontFamily: "'Geist Mono', monospace",
+                fontSize: 11,
+                padding: '4px 10px',
+                borderRadius: 6,
+                background: i === phaseIdx ? 'var(--accent-soft)' : 'transparent',
+                border: `1px solid ${i === phaseIdx ? 'var(--accent-line)' : 'transparent'}`,
+                color: i === phaseIdx ? 'var(--accent)' : i < phaseIdx ? '#4a4a4a' : '#555',
+                fontWeight: i === phaseIdx ? 600 : 400,
+                transition: 'all 0.2s',
+              }}
+            >
               {i < phaseIdx ? '✓ ' : ''}{PHASE_LABEL[ph]}
             </div>
           ))}
-          <div style={{ marginLeft: 8 }}>
+          <div style={{ marginLeft: 4 }}>
             <UserButton />
           </div>
         </div>
@@ -459,22 +454,22 @@ function ChatView(p: ChatProps) {
       {/* messages */}
       <div
         ref={p.scrollRef}
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          scrollbarWidth: 'none',
-        }}
+        style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none' }}
       >
-        <div style={{
-          maxWidth: 740,
-          margin: '0 auto',
-          padding: '28px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 16,
-        }}>
+        <div
+          className="chat-messages-inner"
+          style={{
+            maxWidth: 740,
+            margin: '0 auto',
+            padding: '28px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 16,
+          }}
+        >
         {p.msgs.map((m, i) => {
           const you = m.role === 'candidate'
+          const isQuestion = i === 0 && m.role === 'interviewer'
           return (
             <div key={i} style={{
               display: 'flex',
@@ -489,20 +484,21 @@ function ChatView(p: ChatProps) {
                 fontSize: 10,
                 letterSpacing: '.12em',
                 textTransform: 'uppercase',
-                color: you ? 'var(--accent)' : '#4e4e4e',
+                color: you ? 'var(--accent)' : isQuestion ? 'var(--accent)' : '#4e4e4e',
                 padding: '0 4px',
               }}>
-                {you ? 'You' : 'DevGrill'}
+                {you ? 'You' : isQuestion ? 'Question' : 'Mr. Grill'}
               </span>
               <div style={{
-                maxWidth: 'min(680px, 82%)',
-                padding: '13px 17px',
+                maxWidth: isQuestion ? '100%' : 'min(680px, 88%)',
+                width: isQuestion ? '100%' : undefined,
+                padding: isQuestion ? '18px 22px' : '13px 17px',
                 fontSize: 14.5,
-                lineHeight: 1.6,
+                lineHeight: 1.7,
                 borderRadius: you ? '16px 16px 5px 16px' : '16px 16px 16px 5px',
-                background: you ? 'var(--accent)' : '#141414',
+                background: isQuestion ? 'rgba(var(--accent-rgb, 100,200,150), 0.04)' : you ? 'var(--accent)' : '#141414',
                 color: you ? '#0a0a0a' : '#dcdcdc',
-                border: you ? 'none' : '1px solid #222',
+                border: isQuestion ? '1px solid var(--accent-line)' : you ? 'none' : '1px solid #222',
                 fontWeight: you ? 500 : 400,
                 whiteSpace: 'pre-wrap',
               }}>
@@ -515,7 +511,7 @@ function ChatView(p: ChatProps) {
         {/* typing indicator */}
         {p.sending && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, animation: 'fadeUp .3s ease both' }}>
-            <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4e4e4e', padding: '0 4px' }}>DevGrill</span>
+            <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 10, letterSpacing: '.12em', textTransform: 'uppercase', color: '#4e4e4e', padding: '0 4px' }}>Mr. Grill</span>
             <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '14px 18px', borderRadius: 16, background: '#141414', border: '1px solid #222' }}>
               {[0, 0.15, 0.3].map((delay, i) => (
                 <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#666', display: 'inline-block', animation: `dotPulse 1.1s infinite ${delay}s` }} />
@@ -552,7 +548,7 @@ function ChatView(p: ChatProps) {
 
       {/* input bar */}
       {!p.isComplete && (
-        <div style={{ borderTop: '1px solid #181818', padding: '14px 24px', background: '#0a0a0a' }}>
+        <div className="chat-input-bar" style={{ borderTop: '1px solid #181818', padding: '14px 24px', background: '#0a0a0a' }}>
         <div style={{
           maxWidth: 740,
           margin: '0 auto',
@@ -632,7 +628,7 @@ function ChatView(p: ChatProps) {
   )
 }
 
-// ── Report view ───────────────────────────────────────────────────────────────
+// ── Report view ──────────────────────────────────────────────────────────────
 
 const RUBRIC_KEYS: { key: keyof RubricScores; label: string }[] = [
   { key: 'requirementsGathering', label: 'Requirements Gathering' },
@@ -822,6 +818,7 @@ function ReportView({ scores, phaseFeedback, questionTitle, targetRole, targetCo
 
 function InterviewPage() {
   const [view, setView] = useState<View>('setup')
+  const [resumingSession, setResumingSession] = useState(false)
   const [resumeTab, setResumeTab] = useState<'paste' | 'upload'>('paste')
   const [resumeText, setResumeText] = useState('')
   const [jdText, setJdText] = useState('')
@@ -852,6 +849,7 @@ function InterviewPage() {
     const resumeId = searchParams.get('threadId')
     if (!resumeId) return
 
+    setResumingSession(true)
     setView('loading')
 
     async function restoreSession(id: string) {
@@ -868,7 +866,7 @@ function InterviewPage() {
         const firstInterviewer = restored.find(m => m.role === 'interviewer')
         if (firstInterviewer) setQuestionText(firstInterviewer.content)
         if (s.question?.title) setQuestionTitle(s.question.title)
-        setMsgs(restored.slice(1))
+        setMsgs(restored)
         setPhase(s.phase ?? 'requirements')
 
         if (s.interviewComplete) {
@@ -942,6 +940,7 @@ function InterviewPage() {
       if (turn.openingMessage) setQuestionText(turn.openingMessage)
       if (turn.questionTitle) setQuestionTitle(turn.questionTitle)
       const initialMsgs: Msg[] = []
+      if (turn.openingMessage) initialMsgs.push({ role: 'interviewer', content: turn.openingMessage })
       if (turn.interviewerMessage) initialMsgs.push({ role: 'interviewer', content: turn.interviewerMessage })
       setMsgs(initialMsgs)
       setPhase(turn.phase)
@@ -1015,7 +1014,7 @@ function InterviewPage() {
     }
   }
 
-  if (view === 'loading') return <LoadingView />
+  if (view === 'loading') return <LoadingView resuming={resumingSession} />
 
   if (view === 'complete' && scores) {
     return (
@@ -1074,7 +1073,19 @@ function InterviewPage() {
 
 export default function InterviewPageWrapper() {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`
+          @keyframes breathe { 0%, 100% { transform: scale(0.7); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
+          @keyframes breatheCore { 0%, 100% { box-shadow: 0 0 10px 2px var(--accent-line); } 50% { box-shadow: 0 0 28px 8px var(--accent-line); } }
+        `}</style>
+        <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--accent-soft)', animation: 'breathe 2.4s ease-in-out infinite' }} />
+          <div style={{ position: 'absolute', inset: 8, borderRadius: '50%', background: 'var(--accent-soft)', animation: 'breathe 2.4s ease-in-out infinite 0.4s' }} />
+          <div style={{ position: 'relative', width: 14, height: 14, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 20px 4px var(--accent-line)', animation: 'breatheCore 2.4s ease-in-out infinite' }} />
+        </div>
+      </div>
+    }>
       <InterviewPage />
     </Suspense>
   )

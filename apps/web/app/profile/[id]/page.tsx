@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
 import { UserButton } from '@clerk/nextjs'
 import sql from '@/lib/db'
-import type { RubricScores, PhaseFeedback } from '@/lib/types'
+import type { RubricScores, PhaseFeedback } from '@devgrill/shared'
 
 type InterviewRow = {
   id: string

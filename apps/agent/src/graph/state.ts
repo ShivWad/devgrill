@@ -1,64 +1,22 @@
 import { Annotation } from "@langchain/langgraph";
+import type {
+  Phase,
+  Message,
+  QuestionConfig,
+  InterviewStrategy,
+  RubricScores,
+  PhaseFeedback,
+} from "@devgrill/shared";
 
-// ─────────────────────────────────────────────────────────
-// Domain types
-// ─────────────────────────────────────────────────────────
-
-export type Phase = "requirements" | "design" | "deep_dive" | "scale";
-
-export type PhaseAction = "stay" | "advance" | "end";
-
-export interface Message {
-  role: "interviewer" | "candidate";
-  content: string;
-  phase: Phase;
-  timestamp: number;
-}
-
-// Output of the question_generator node
-export interface QuestionConfig {
-  title: string; // "Design a real-time order tracking system"
-  description: string; // Full problem statement read to candidate
-  difficulty: "mid" | "senior" | "staff";
-  whyThisQuestion: string; // Gap-analysis rationale shown on /preparing
-  expectedClarifications: string[]; // Topics candidate should ask about
-  keyComponents: string[]; // Components a good answer includes
-  commonPitfalls: string[]; // Mistakes to watch for when scoring
-  deepDiveTargets: string[]; // Components worth drilling into
-}
-
-// Also produced by question_generator, alongside QuestionConfig
-export interface InterviewStrategy {
-  resumeStrengths: string[]; // Skills from resume relevant to this question
-  resumeGaps: string[]; // Skills the JD wants but resume doesn't show
-  experienceHooks: string[]; // Specific resume items the interviewer can reference
-  companyContext: string; // What this company's interviewers tend to value
-  probingStrategy: string; // What the deep-dive phase should focus on
-}
-
-// Output of the judge node
-export interface RubricScores {
-  requirementsGathering: number; // 0-5
-  apiDesign: number;
-  dataModeling: number;
-  systemComponents: number;
-  scalability: number;
-  tradeoffs: number;
-  communication: number;
-  overall: number; // 0-100 weighted
-  levelAssessment: string; // e.g. "Meets senior bar"
-  roleReadiness: string; // role-specific readiness summary
-  gapAnalysis: string; // concrete skills to work on
-  resumeAdvice: string; // how to better position experience
-}
-
-export interface PhaseFeedback {
-  phase: Phase;
-  score: number;
-  strengths: string[];
-  gaps: string[];
-  specificQuotes: string[]; // short evidence excerpts from transcript
-}
+export type {
+  Phase,
+  PhaseAction,
+  Message,
+  QuestionConfig,
+  InterviewStrategy,
+  RubricScores,
+  PhaseFeedback,
+} from "@devgrill/shared";
 
 // ─────────────────────────────────────────────────────────
 // Graph state
