@@ -1,0 +1,22 @@
+Project Role : Custom Software Engineer
+Project Role Description : Develop custom software solutions to design, code, and enhance components across systems or applications. Use modern frameworks and agile practices to deliver scalable, high-performing solutions tailored to specific business needs.
+Must have skills : .NET Architecture
+Good to have skills : NA
+Minimum 3 year(s) of experience is required
+Educational Qualification : 15 years full time education
+
+Summary:
+Should have 6-8 years of experience of API/Microservice development. Well-versed in writing code using dotnet core framework, C#, DoNet Core Web API, LINQ, MS SQL and Entity framework. Good knowledge of microservice and container base platform. Unit testing skill using postman. Strong skills of DevOps – GitHub, Visual studio Able to use Co-Pilot in various dev tasks like Code generation, optimization and unit testing.
+
+
+Professional & Technical Skills:
+- Must To Have Skills: Proficiency in .NET Architecture.
+- Strong understanding of software development life cycle methodologies.
+- Experience with modern frameworks such as ASP.NET and Entity Framework.
+- Familiarity with cloud services and deployment strategies.
+- Ability to troubleshoot and optimize existing software solutions.
+
+Additional Information:
+- The candidate should have minimum 6-8 years of experience in .NET Architecture.
+- This position is based at our Gurugram office. Need to travel 5 days a week.
+- A 15 years full time education is required. 

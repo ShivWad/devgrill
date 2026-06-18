@@ -1,0 +1,46 @@
+import { InterviewStateType, Phase } from "../state";
+
+const PHASE_ORDER: Phase[] = ["requirements", "design", "deep_dive", "scale"];
+
+const MAX_TURNS: Record<Phase, number> = {
+  requirements: 5,
+  design: 6,
+  deep_dive: 5,
+  scale: 4,
+};
+
+/**
+ * Phase evaluator node — pure synchronous logic, no LLM
+ * Runs after every candidate turn. Decides:
+ * - stay:    increment phaseTurnCount, stay in current phase
+ * - advance: move to next phase, reset phaseTurnCount to 0
+ * - end:     set interviewComplete = true (conditional edge routes to judge)
+ * @param state
+ * @returns
+ */
+export function phaseEvaluatorNode(
+  state: InterviewStateType,
+): Partial<InterviewStateType> {
+  const { currentPhase, phaseTurnCount } = state;
+  const newCount = phaseTurnCount + 1;
+
+  // TODO: LLM-based coverage checker
+
+  console.log(
+    `[phase-evaluator] phase=${currentPhase} phaseTurnCount=${phaseTurnCount} → newCount=${newCount} max=${MAX_TURNS[currentPhase]}`,
+  );
+
+  if (newCount >= MAX_TURNS[currentPhase]) {
+    if (currentPhase === "scale") {
+      console.log(`[phase-evaluator] END — scale phase complete`);
+      return { phaseTurnCount: newCount, interviewComplete: true };
+    }
+
+    const nextPhase = PHASE_ORDER[PHASE_ORDER.indexOf(currentPhase) + 1];
+    console.log(`[phase-evaluator] ADVANCE → ${nextPhase}`);
+    return { currentPhase: nextPhase, phaseTurnCount: 0 };
+  }
+
+  console.log(`[phase-evaluator] STAY in ${currentPhase}`);
+  return { phaseTurnCount: newCount };
+}
