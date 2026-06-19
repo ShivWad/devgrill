@@ -3,7 +3,7 @@ import { Command } from "@langchain/langgraph";
 import { getAuth } from "@clerk/express";
 import { requireClerkAuth } from "../middleware/auth";
 import { requireFields, checkLengths, toTurnResponse } from "../middleware/validation";
-import { createInterview, completeInterview } from "../db/interviews";
+import { createInterview, completeInterview, threadBelongsToUser } from "../db/interviews";
 import { interviewerModel } from "../models";
 import { sanitizeUserInput } from "../utils/text";
 import { logger } from "../utils/logger";
@@ -96,6 +96,11 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
 
     const log = logger.child({ route: "POST /graph/resume", threadId });
     try {
+      const uid = effectiveUserId(req);
+      if (!(await threadBelongsToUser(threadId, uid))) {
+        log.warn("Ownership check failed on resume", { userId: uid });
+        return void res.status(403).json({ error: "Forbidden" });
+      }
       log.debug("Resuming interview with candidate answer", { answerLength: safeAnswer.length });
       const state = await compiledGraph.invoke(
         new Command({ resume: safeAnswer }),
@@ -120,6 +125,11 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
 
     const log = logger.child({ route: "GET /graph/state", threadId });
     try {
+      const uid = effectiveUserId(req);
+      if (!(await threadBelongsToUser(threadId, uid))) {
+        log.warn("Ownership check failed on state fetch", { userId: uid });
+        return void res.status(403).json({ error: "Forbidden" });
+      }
       const snapshot = await compiledGraph.getState({
         configurable: { thread_id: threadId },
       });
@@ -196,6 +206,11 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
 
     const log = logger.child({ route: "POST /graph/auto-candidate", threadId });
     try {
+      const uid = effectiveUserId(req);
+      if (!(await threadBelongsToUser(threadId, uid))) {
+        log.warn("Ownership check failed on auto-candidate", { userId: uid });
+        return void res.status(403).json({ error: "Forbidden" });
+      }
       const snapshot = await compiledGraph.getState({
         configurable: { thread_id: threadId },
       });

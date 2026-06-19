@@ -29,6 +29,21 @@ export async function createInterview(
 }
 
 /**
+ * Returns true if the thread belongs to the given user. Returns false if not
+ * found or owned by someone else. Used to gate state/resume/auto-candidate.
+ */
+export async function threadBelongsToUser(
+  threadId: string,
+  userId: string,
+): Promise<boolean> {
+  const result = await getPool().query(
+    `SELECT 1 FROM interviews WHERE thread_id = $1 AND user_id = $2 LIMIT 1`,
+    [threadId, userId],
+  );
+  return result.rowCount > 0;
+}
+
+/**
  * Updates the interview row with scores and report once all phases complete.
  * No-ops if the interview is not yet complete.
  */
