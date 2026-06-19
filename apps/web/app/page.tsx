@@ -98,6 +98,24 @@ export default async function HomePage() {
             >
               Start a mock interview
             </Link>
+            {userId && (
+              <Link
+                href="/profile"
+                className="hero-sessions-btn"
+                style={{
+                  fontSize: 14,
+                  fontWeight: 500,
+                  color: 'var(--fg-muted)',
+                  border: '1px solid var(--border-strong)',
+                  borderRadius: 11,
+                  padding: '14px 24px',
+                  textDecoration: 'none',
+                  textAlign: 'center',
+                }}
+              >
+                My sessions
+              </Link>
+            )}
           </div>
         </section>
 

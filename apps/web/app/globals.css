@@ -115,6 +115,10 @@ body {
   border-color: #4e4e4e !important;
 }
 
+.hero-sessions-btn {
+  display: none;
+}
+
 /* ── Pricing grid ── */
 .pricing-grid {
   grid-template-columns: repeat(3, 1fr);
@@ -213,6 +217,10 @@ body {
   .cta-group > * {
     text-align: center;
     display: block;
+  }
+
+  .hero-sessions-btn {
+    display: block !important;
   }
 
   .feature-grid {
