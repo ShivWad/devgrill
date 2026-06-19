@@ -1,4 +1,5 @@
 import { InterviewStateType, Phase } from "../state";
+import { logger } from "../../utils/logger";
 
 const PHASE_ORDER: Phase[] = ["requirements", "design", "deep_dive", "scale"];
 
@@ -26,21 +27,20 @@ export function phaseEvaluatorNode(
 
   // TODO: LLM-based coverage checker
 
-  console.log(
-    `[phase-evaluator] phase=${currentPhase} phaseTurnCount=${phaseTurnCount} → newCount=${newCount} max=${MAX_TURNS[currentPhase]}`,
-  );
+  const log = logger.child({ node: "phase_evaluator", phase: currentPhase });
+  log.debug("Evaluating phase transition", { phaseTurnCount, newCount, max: MAX_TURNS[currentPhase] });
 
   if (newCount >= MAX_TURNS[currentPhase]) {
     if (currentPhase === "scale") {
-      console.log(`[phase-evaluator] END — scale phase complete`);
+      log.info("Interview complete — scale phase finished");
       return { phaseTurnCount: newCount, interviewComplete: true };
     }
 
     const nextPhase = PHASE_ORDER[PHASE_ORDER.indexOf(currentPhase) + 1];
-    console.log(`[phase-evaluator] ADVANCE → ${nextPhase}`);
+    log.info("Advancing to next phase", { nextPhase });
     return { currentPhase: nextPhase, phaseTurnCount: 0 };
   }
 
-  console.log(`[phase-evaluator] STAY in ${currentPhase}`);
+  log.debug("Staying in current phase");
   return { phaseTurnCount: newCount };
 }

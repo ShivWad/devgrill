@@ -1,4 +1,5 @@
 import { getPool } from "./pool";
+import { logger } from "../utils/logger";
 import type { InterviewStateType } from "../graph/state";
 
 /**
@@ -12,6 +13,7 @@ export async function createInterview(
   targetCompany: string,
   clientIp?: string,
 ) {
+  const log = logger.child({ fn: "createInterview", threadId, userId });
   try {
     await getPool().query(
       `INSERT INTO interviews (user_id, thread_id, target_role, target_company, client_ip)
@@ -19,8 +21,10 @@ export async function createInterview(
        ON CONFLICT (thread_id) DO NOTHING`,
       [userId, threadId, targetRole || null, targetCompany || null, clientIp ?? null],
     );
+    log.info("Interview row created");
   } catch (err) {
-    console.error("createInterview failed:", err);
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("DB insert failed for createInterview", { err: error.message, stack: error.stack });
   }
 }
 
@@ -33,6 +37,7 @@ export async function completeInterview(
   state: InterviewStateType,
 ) {
   if (!state.interviewComplete) return;
+  const log = logger.child({ fn: "completeInterview", threadId });
   try {
     await getPool().query(
       `UPDATE interviews
@@ -48,7 +53,9 @@ export async function completeInterview(
         state.reportMarkdown ?? null,
       ],
     );
+    log.info("Interview row completed with scores and report");
   } catch (err) {
-    console.error("completeInterview failed:", err);
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("DB update failed for completeInterview", { err: error.message, stack: error.stack });
   }
 }

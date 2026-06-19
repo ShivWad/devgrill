@@ -24,12 +24,12 @@ export interface SetupProps {
 
 const field: React.CSSProperties = {
   width: "100%",
-  background: "#111",
-  border: "1px solid #252525",
+  background: "var(--bg-input)",
+  border: "1px solid var(--border-strong)",
   borderRadius: 10,
   padding: "11px 14px",
   fontSize: 14,
-  color: "#e8e8e8",
+  color: "var(--fg-2)",
   fontFamily: "inherit",
   outline: "none",
   resize: "vertical",
@@ -38,7 +38,7 @@ const field: React.CSSProperties = {
 const label: React.CSSProperties = {
   fontSize: 13,
   fontWeight: 500,
-  color: "#9a9a9a",
+  color: "var(--fg-muted)",
   marginBottom: 8,
   display: "block",
 };
@@ -51,8 +51,8 @@ function tabStyle(active: boolean): React.CSSProperties {
     borderRadius: 7,
     border: "none",
     cursor: "pointer",
-    background: active ? "#1e1e1e" : "transparent",
-    color: active ? "#e8e8e8" : "#666",
+    background: active ? "var(--bg-elevated)" : "transparent",
+    color: active ? "var(--fg-2)" : "var(--fg-dim)",
     transition: "background 0.15s, color 0.15s",
   };
 }
@@ -62,15 +62,15 @@ export function SetupView(p: SetupProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
       <style>{GLOBAL_STYLES}</style>
       <Nav right={<UserButton />} />
       <div style={{ flex: 1, display: "flex", justifyContent: "center", padding: "48px 24px 80px" }}>
         <div style={{ width: "100%", maxWidth: 620 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.025em", color: "#fafafa", marginBottom: 6 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-0.025em", color: "var(--fg)", marginBottom: 6 }}>
             Set up your interview
           </h1>
-          <p style={{ fontSize: 15, color: "#7a7a7a", marginBottom: 36, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 15, color: "var(--fg-muted)", marginBottom: 36, lineHeight: 1.5 }}>
             Your resume and JD are never stored — they&apos;re used only to generate your question.
           </p>
 
@@ -80,7 +80,7 @@ export function SetupView(p: SetupProps) {
               <label style={{ ...label, margin: 0 }}>
                 Resume <span style={{ color: "#f97316" }}>*</span>
               </label>
-              <div style={{ display: "flex", gap: 2, background: "#0f0f0f", border: "1px solid #1e1e1e", borderRadius: 9, padding: 3 }}>
+              <div style={{ display: "flex", gap: 2, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 9, padding: 3 }}>
                 <button style={tabStyle(p.resumeTab === "paste")} onClick={() => p.onResumeTabChange("paste")}>
                   Paste
                 </button>
@@ -114,13 +114,13 @@ export function SetupView(p: SetupProps) {
                   justifyContent: "center",
                   gap: 8,
                   cursor: "pointer",
-                  color: "#555",
+                  color: "var(--fg-dim)",
                   resize: "none",
                 }}
                 onClick={() => fileRef.current?.click()}
               >
                 {p.pdfParsing ? (
-                  <span style={{ fontSize: 13, color: "#888" }}>Parsing PDF…</span>
+                  <span style={{ fontSize: 13, color: "var(--fg-muted)" }}>Parsing PDF…</span>
                 ) : (
                   <>
                     <span style={{ fontSize: 22 }}>↑</span>
@@ -163,7 +163,7 @@ export function SetupView(p: SetupProps) {
           >
             <div>
               <label style={label}>
-                Target role <span style={{ color: "#555", fontWeight: 400 }}>(optional)</span>
+                Target role <span style={{ color: "var(--fg-dim)", fontWeight: 400 }}>(optional)</span>
               </label>
               <input
                 style={{ ...field, resize: "none" } as React.CSSProperties}
@@ -174,7 +174,7 @@ export function SetupView(p: SetupProps) {
             </div>
             <div>
               <label style={label}>
-                Target company <span style={{ color: "#555", fontWeight: 400 }}>(optional)</span>
+                Target company <span style={{ color: "var(--fg-dim)", fontWeight: 400 }}>(optional)</span>
               </label>
               <input
                 style={{ ...field, resize: "none" } as React.CSSProperties}

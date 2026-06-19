@@ -1,3 +1,5 @@
+import { logger } from "./logger";
+
 /**
  * Execution metrics captured for a single LLM invocation.
  *
@@ -77,9 +79,19 @@ export async function invokeWithMetrics(
   },
   prompt: string,
 ) {
-  console.log(`Invoked: ${node}`);
+  const log = logger.child({ node });
+  log.info("LLM invocation started");
   const start = Date.now();
-  const result = await model.invoke(prompt);
+
+  let result: Awaited<ReturnType<typeof model.invoke>>;
+  try {
+    result = await model.invoke(prompt);
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("LLM invocation failed", { err: error.message, stack: error.stack });
+    throw error;
+  }
+
   const durationMs = Date.now() - start;
 
   const usage = result.usage_metadata ?? {};
@@ -93,29 +105,23 @@ export async function invokeWithMetrics(
     totalTokens: (usage.input_tokens ?? 0) + (usage.output_tokens ?? 0),
   };
 
-  console.table([metric]);
+  log.info("LLM invocation completed", {
+    durationMs,
+    inputTokens: metric.inputTokens,
+    cachedTokens: metric.cachedTokens,
+    outputTokens: metric.outputTokens,
+    reasoningTokens: metric.reasoningTokens,
+    totalTokens: metric.totalTokens,
+  });
+
   accumulateMetric(metric);
 
   return { result, metric };
 }
 
-/** Prints an aggregated token/cost summary for the current session to stdout. */
+/** Logs an aggregated token/cost summary for the current session. */
 export function printSessionSummary() {
   const billableInput = session.totalInputTokens - session.totalCachedTokens;
-
-  console.log("\n╔══════════════════════════════════════════════╗");
-  console.log("║           SESSION TOKEN SUMMARY              ║");
-  console.log("╠══════════════════════════════════════════════╣");
-  console.log(`║  Total LLM calls      : ${String(session.calls.length).padEnd(20)}║`);
-  console.log(`║  Total duration       : ${(session.totalDurationMs / 1000).toFixed(1).padEnd(19)}s ║`);
-  console.log("╠══════════════════════════════════════════════╣");
-  console.log(`║  Input tokens         : ${String(session.totalInputTokens).padEnd(20)}║`);
-  console.log(`║    └─ cached          : ${String(session.totalCachedTokens).padEnd(20)}║`);
-  console.log(`║    └─ billable input  : ${String(billableInput).padEnd(20)}║`);
-  console.log(`║  Output tokens        : ${String(session.totalOutputTokens).padEnd(20)}║`);
-  console.log(`║    └─ reasoning       : ${String(session.totalReasoningTokens).padEnd(20)}║`);
-  console.log(`║  Total tokens         : ${String(session.totalTokens).padEnd(20)}║`);
-  console.log("╠══════════════════════════════════════════════╣");
 
   const byNode = session.calls.reduce(
     (acc, c) => {
@@ -128,13 +134,15 @@ export function printSessionSummary() {
     {} as Record<string, { calls: number; totalTokens: number; durationMs: number }>,
   );
 
-  console.log("║  Per-node breakdown:                         ║");
-  for (const [node, stats] of Object.entries(byNode)) {
-    const label = `${node} (×${stats.calls})`.padEnd(28);
-    const tokens = String(stats.totalTokens).padEnd(8);
-    const secs = `${(stats.durationMs / 1000).toFixed(1)}s`.padEnd(6);
-    console.log(`║    ${label} ${tokens} ${secs}  ║`);
-  }
-
-  console.log("╚══════════════════════════════════════════════╝\n");
+  logger.info("Session token summary", {
+    totalCalls: session.calls.length,
+    totalDurationMs: session.totalDurationMs,
+    totalInputTokens: session.totalInputTokens,
+    cachedTokens: session.totalCachedTokens,
+    billableInputTokens: billableInput,
+    totalOutputTokens: session.totalOutputTokens,
+    reasoningTokens: session.totalReasoningTokens,
+    totalTokens: session.totalTokens,
+    byNode,
+  });
 }

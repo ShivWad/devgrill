@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const STYLES = `
   @keyframes fadeUp {
@@ -35,7 +36,7 @@ function Feature({ text }: { text: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 9, marginBottom: 10 }}>
       {CHECK}
-      <span style={{ fontSize: 13.5, color: '#8a8a8a', lineHeight: 1.5 }}>{text}</span>
+      <span style={{ fontSize: 13.5, color: 'var(--fg-muted)', lineHeight: 1.5 }}>{text}</span>
     </div>
   )
 }
@@ -75,7 +76,7 @@ function NotifyInput({ tier }: { tier: string }) {
         border: '1px solid rgba(249,115,22,0.2)',
         borderRadius: 8,
         fontSize: 13,
-        color: '#888',
+        color: 'var(--fg-muted)',
       }}>
         You&rsquo;re on the list.
       </div>
@@ -95,20 +96,20 @@ function NotifyInput({ tier }: { tier: string }) {
           flex: 1,
           minWidth: 0,
           padding: '9px 12px',
-          background: '#0d0d0d',
-          border: '1px solid #252525',
+          background: 'var(--bg-input)',
+          border: '1px solid var(--border-strong)',
           borderRadius: 7,
-          color: '#d0d0d0',
+          color: 'var(--fg-2)',
           fontSize: 13,
           transition: 'border-color 0.15s ease',
         }}
       />
       <button type="submit" disabled={loading} style={{
         padding: '9px 14px',
-        background: '#161616',
-        border: '1px solid #2a2a2a',
+        background: 'var(--bg-elevated)',
+        border: '1px solid var(--border-strong)',
         borderRadius: 7,
-        color: '#b0b0b0',
+        color: 'var(--fg-muted)',
         fontSize: 13,
         fontWeight: 500,
         cursor: 'pointer',
@@ -123,23 +124,26 @@ function NotifyInput({ tier }: { tier: string }) {
 
 export default function PricingPage() {
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fafafa' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
       <style>{STYLES}</style>
 
       {/* Nav */}
       <nav className="pricing-nav" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '22px 36px', borderBottom: '1px solid #181818',
+        padding: '22px 36px', borderBottom: '1px solid var(--border)',
         maxWidth: 1140, margin: '0 auto',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none' }}>
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 14px var(--accent-line)' }} />
-          <span style={{ fontSize: 17, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.01em' }}>DevGrill</span>
+          <span style={{ fontSize: 17, fontWeight: 600, color: 'var(--fg)', letterSpacing: '-0.01em' }}>DevGrill</span>
         </Link>
-        <div className="pricing-nav-links" style={{ display: 'flex', gap: 24, fontSize: 14, color: '#8f8f8f' }}>
-          <Link href="/" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Home</Link>
-          <Link href="/interview" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Start interview</Link>
-          <Link href="/sign-in" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Sign in</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div className="pricing-nav-links" style={{ display: 'flex', gap: 24, fontSize: 14, color: 'var(--fg-muted)' }}>
+            <Link href="/" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }}>Home</Link>
+            <Link href="/interview" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }}>Start interview</Link>
+            <Link href="/sign-in" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }}>Sign in</Link>
+          </div>
+          <ThemeToggle />
         </div>
       </nav>
 
@@ -160,12 +164,12 @@ export default function PricingPage() {
           fontWeight: 700,
           letterSpacing: '-0.03em',
           lineHeight: 1.08,
-          color: '#fafafa',
+          color: 'var(--fg)',
           marginBottom: 16,
         }}>
           Simple, honest pricing.
         </h1>
-        <p style={{ fontSize: 16, color: '#666', maxWidth: 420, margin: '0 auto', lineHeight: 1.65 }}>
+        <p style={{ fontSize: 16, color: 'var(--fg-dim)', maxWidth: 420, margin: '0 auto', lineHeight: 1.65 }}>
           Start free. Upgrade when you need more.
         </p>
       </section>
@@ -179,16 +183,16 @@ export default function PricingPage() {
 
           {/* ── Free ── */}
           <div className="pricing-card" style={{
-            background: '#0f0f0f',
-            border: '1px solid #1f1f1f',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
             borderRadius: 16,
             padding: '28px 26px 30px',
           }}>
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#666', marginBottom: 10 }}>Free</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-dim)', marginBottom: 10 }}>Free</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: '#efefef' }}>₹0</span>
-                <span style={{ fontSize: 13, color: '#555' }}>/month</span>
+                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--fg-2)' }}>₹0</span>
+                <span style={{ fontSize: 13, color: 'var(--fg-dim)' }}>/month</span>
               </div>
             </div>
 
@@ -215,7 +219,7 @@ export default function PricingPage() {
 
           {/* ── Pro ── */}
           <div className="pricing-card" style={{
-            background: '#0f0f0f',
+            background: 'var(--bg-card)',
             border: '1px solid rgba(249,115,22,0.28)',
             borderRadius: 16,
             padding: '28px 26px 30px',
@@ -241,10 +245,10 @@ export default function PricingPage() {
             </div>
 
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#666', marginBottom: 10 }}>Pro</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-dim)', marginBottom: 10 }}>Pro</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: '#efefef' }}>₹399</span>
-                <span style={{ fontSize: 13, color: '#555' }}>/month</span>
+                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--fg-2)' }}>₹399</span>
+                <span style={{ fontSize: 13, color: 'var(--fg-dim)' }}>/month</span>
               </div>
             </div>
 
@@ -259,7 +263,7 @@ export default function PricingPage() {
                 fontSize: 10.5,
                 letterSpacing: '.12em',
                 textTransform: 'uppercase',
-                color: '#444',
+                color: 'var(--fg-faint)',
                 marginBottom: 10,
               }}>
                 Coming soon — get notified
@@ -270,16 +274,16 @@ export default function PricingPage() {
 
           {/* ── Pay as you go ── */}
           <div className="pricing-card" style={{
-            background: '#0f0f0f',
-            border: '1px solid #1f1f1f',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
             borderRadius: 16,
             padding: '28px 26px 30px',
           }}>
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: '#666', marginBottom: 10 }}>Pay as you go</div>
+              <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--fg-dim)', marginBottom: 10 }}>Pay as you go</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: '#efefef' }}>₹29</span>
-                <span style={{ fontSize: 13, color: '#555' }}>/interview</span>
+                <span style={{ fontSize: 38, fontWeight: 700, letterSpacing: '-0.04em', color: 'var(--fg-2)' }}>₹29</span>
+                <span style={{ fontSize: 13, color: 'var(--fg-dim)' }}>/interview</span>
               </div>
             </div>
 
@@ -294,7 +298,7 @@ export default function PricingPage() {
                 fontSize: 10.5,
                 letterSpacing: '.12em',
                 textTransform: 'uppercase',
-                color: '#444',
+                color: 'var(--fg-faint)',
                 marginBottom: 10,
               }}>
                 Coming soon — get notified
@@ -310,19 +314,19 @@ export default function PricingPage() {
       <footer style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         flexWrap: 'wrap', gap: 14,
-        padding: '24px 36px', borderTop: '1px solid #181818',
+        padding: '24px 36px', borderTop: '1px solid var(--border)',
         maxWidth: 1140, margin: '0 auto',
-        fontSize: 13, color: '#6e6e6e',
+        fontSize: 13, color: 'var(--fg-dim)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
-          <span style={{ fontWeight: 600, color: '#cfcfcf' }}>DevGrill</span>
+          <span style={{ fontWeight: 600, color: 'var(--fg-2)' }}>DevGrill</span>
           <span style={{ marginLeft: 6 }}>Get grilled. Get hired.</span>
         </div>
         <div style={{ display: 'flex', gap: 22 }}>
-          <Link href="/" style={{ color: '#6e6e6e', textDecoration: 'none' }}>Home</Link>
-          <Link href="/pricing" style={{ color: '#6e6e6e', textDecoration: 'none' }}>Pricing</Link>
-          <span style={{ color: '#4a4a4a' }}>© 2026</span>
+          <Link href="/" style={{ color: 'var(--fg-dim)', textDecoration: 'none' }}>Home</Link>
+          <Link href="/pricing" style={{ color: 'var(--fg-dim)', textDecoration: 'none' }}>Pricing</Link>
+          <span style={{ color: 'var(--fg-faint)' }}>© 2026</span>
         </div>
       </footer>
     </div>

@@ -18,7 +18,9 @@
     "pdfjs-dist": "^6.0.227",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "svix": "^1.95.2"
+    "svix": "^1.95.2",
+    "winston": "^3.19.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/node": "^22",

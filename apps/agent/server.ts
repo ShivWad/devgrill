@@ -6,6 +6,7 @@ import pg from "pg";
 import { graph } from "./src/graph/graph";
 import { setPool } from "./src/db/pool";
 import { createGraphRouter } from "./src/routes/graph";
+import { logger } from "./src/utils/logger";
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3001;
@@ -79,11 +80,11 @@ async function start() {
   app.use("/graph", createGraphRouter(compiledGraph));
 
   app.listen(PORT, () => {
-    console.log(`Agent server running at http://localhost:${PORT}`);
+    logger.info("Agent server started", { port: PORT });
   });
 }
 
 start().catch((err) => {
-  console.error("Failed to start server:", err);
+  logger.error("Failed to start server", { err: err instanceof Error ? err.message : String(err), stack: err instanceof Error ? err.stack : undefined });
   process.exit(1);
 });

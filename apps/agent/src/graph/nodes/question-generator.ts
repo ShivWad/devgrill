@@ -1,6 +1,7 @@
 import { extractJson, stripThinkTags, wrapUserContent } from "../../utils/text";
 import { invokeWithMetrics } from "../../utils/metrics";
 import { interviewerModel, reasoningModel } from "../../models";
+import { logger } from "../../utils/logger";
 import type { QuestionConfig, InterviewStrategy, InterviewStateType } from "../state";
 
 export interface Stage1Result {
@@ -293,7 +294,11 @@ export const generateQuestion = async (
       extractJson(stage1Res.content as string),
     ) as Stage1Result;
   } catch (err) {
-    console.error("STAGE 1 RAW OUTPUT:", stage1Res.content);
+    logger.error("question-generator: Stage 1 JSON parse failed", {
+      node: "question_generator_stage1",
+      err: err instanceof Error ? err.message : String(err),
+      rawOutput: (stage1Res.content as string).slice(0, 500),
+    });
     throw new Error(`generateQuestion: Stage 1 JSON parse failed — ${err}`);
   }
 
@@ -317,20 +322,31 @@ export const generateQuestion = async (
   try {
     parsed = JSON.parse(extractJson(raw));
   } catch (err) {
-    console.error("STAGE 2 RAW OUTPUT (failed to parse):");
-    console.error(raw);
+    logger.error("question-generator: Stage 2 JSON parse failed", {
+      node: "question_generator_stage2",
+      err: err instanceof Error ? err.message : String(err),
+      rawOutput: raw.slice(0, 500),
+    });
     throw new Error(`generateQuestion: failed to parse JSON — ${err}`);
   }
 
   if (!parsed.question || !parsed.strategy) {
-    console.error("STAGE 2 RAW OUTPUT (missing question/strategy):");
-    console.error(raw);
+    logger.error("question-generator: Stage 2 response missing required keys", {
+      node: "question_generator_stage2",
+      hasQuestion: !!parsed.question,
+      hasStrategy: !!parsed.strategy,
+      rawOutput: raw.slice(0, 500),
+    });
     throw new Error(
       "generateQuestion: response missing 'question' or 'strategy' key",
     );
   }
 
-  console.log("QUESTION: ", parsed.question);
+  logger.info("Question generated successfully", {
+    node: "question_generator",
+    title: parsed.question.title,
+    difficulty: parsed.question.difficulty,
+  });
 
   return parsed;
 };

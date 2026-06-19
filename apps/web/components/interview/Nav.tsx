@@ -1,6 +1,7 @@
 'use client'
 
 import Link from "next/link";
+import { ThemeToggle } from "../ThemeToggle";
 
 interface NavProps {
   right?: React.ReactNode;
@@ -15,7 +16,7 @@ export function Nav({ right }: NavProps) {
         alignItems: "center",
         justifyContent: "space-between",
         padding: "18px 28px",
-        borderBottom: "1px solid #181818",
+        borderBottom: "1px solid var(--border)",
       }}
     >
       <Link
@@ -35,14 +36,17 @@ export function Nav({ right }: NavProps) {
           style={{
             fontSize: 16,
             fontWeight: 600,
-            color: "#fafafa",
+            color: "var(--fg)",
             letterSpacing: "-0.01em",
           }}
         >
           DevGrill
         </span>
       </Link>
-      {right}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <ThemeToggle />
+        {right}
+      </div>
     </nav>
   );
 }

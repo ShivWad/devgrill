@@ -6,6 +6,7 @@ import { requireFields, checkLengths, toTurnResponse } from "../middleware/valid
 import { createInterview, completeInterview } from "../db/interviews";
 import { interviewerModel } from "../models";
 import { sanitizeUserInput } from "../utils/text";
+import { logger } from "../utils/logger";
 import type { InterviewStateType } from "../graph/state";
 import type { graph } from "../graph/graph";
 
@@ -61,9 +62,11 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
     const safeCompany = sanitizeUserInput(targetCompany);
     const safeRole = sanitizeUserInput(targetRole);
 
+    const log = logger.child({ route: "POST /graph/invoke", threadId });
     try {
       const uid = effectiveUserId(req);
       const clientIp = req.headers["x-client-ip"] as string | undefined;
+      log.info("Starting interview session", { userId: uid, targetRole: safeRole, targetCompany: safeCompany });
       await createInterview(uid, threadId, safeRole, safeCompany, clientIp);
 
       const state = await compiledGraph.invoke(
@@ -72,10 +75,12 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
       );
 
       await completeInterview(threadId, state);
+      log.info("Interview session invoked successfully", { interviewComplete: state.interviewComplete });
       res.json(toTurnResponse(state));
     } catch (error) {
-      console.error("/graph/invoke error:", error);
-      res.status(500).json({ error: String(error) });
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("Failed to invoke interview", { err: err.message, stack: err.stack });
+      res.status(500).json({ error: "Interview failed to start. Please try again." });
     }
   });
 
@@ -89,17 +94,21 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
     const { threadId, candidateAnswer } = req.body as ResumeBody;
     const safeAnswer = sanitizeUserInput(candidateAnswer);
 
+    const log = logger.child({ route: "POST /graph/resume", threadId });
     try {
+      log.debug("Resuming interview with candidate answer", { answerLength: safeAnswer.length });
       const state = await compiledGraph.invoke(
         new Command({ resume: safeAnswer }),
         { configurable: { thread_id: threadId } },
       );
 
       await completeInterview(threadId, state);
+      log.info("Interview resumed successfully", { phase: state.currentPhase, interviewComplete: state.interviewComplete });
       res.json(toTurnResponse(state));
     } catch (error) {
-      console.error("/graph/resume error:", error);
-      res.status(500).json({ error: String(error) });
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("Failed to resume interview", { err: err.message, stack: err.stack });
+      res.status(500).json({ error: "Failed to process your answer. Please try again." });
     }
   });
 
@@ -109,6 +118,7 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
   router.get("/state/:threadId", requireClerkAuth, async (req, res) => {
     const { threadId } = req.params;
 
+    const log = logger.child({ route: "GET /graph/state", threadId });
     try {
       const snapshot = await compiledGraph.getState({
         configurable: { thread_id: threadId },
@@ -116,9 +126,11 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
 
       const values = snapshot.values as InterviewStateType;
       if (!values || Object.keys(values).length === 0) {
+        log.warn("Session not found", { threadId });
         return void res.status(404).json({ error: "Session not found" });
       }
 
+      log.debug("State snapshot retrieved", { phase: values.currentPhase, turnCount: values.turnCount });
       res.json({
         phase: values.currentPhase,
         turnCount: values.turnCount,
@@ -134,8 +146,9 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
         }),
       });
     } catch (error) {
-      console.error("/graph/state error:", error);
-      res.status(500).json({ error: String(error) });
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("Failed to retrieve session state", { err: err.message, stack: err.stack });
+      res.status(500).json({ error: "Failed to retrieve session state." });
     }
   });
 
@@ -143,6 +156,7 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
   // The frontend calls this on mount to reconnect after a page reload.
   router.get("/active-session", requireClerkAuth, async (req, res) => {
     const { userId } = getAuth(req);
+    const log = logger.child({ route: "GET /graph/active-session", userId: userId ?? "unknown" });
     try {
       const { getPool } = await import("../db/pool");
       const result = await getPool().query(
@@ -154,17 +168,22 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
         [userId],
       );
 
-      if (result.rows.length === 0) return void res.json({ threadId: null });
+      if (result.rows.length === 0) {
+        log.debug("No active session found");
+        return void res.json({ threadId: null });
+      }
 
       const row = result.rows[0];
+      log.info("Active session found", { threadId: row.thread_id });
       res.json({
         threadId: row.thread_id,
         targetRole: row.target_role,
         targetCompany: row.target_company,
       });
     } catch (error) {
-      console.error("/graph/active-session error:", error);
-      res.status(500).json({ error: String(error) });
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("Failed to retrieve active session", { err: err.message, stack: err.stack });
+      res.status(500).json({ error: "Failed to retrieve active session." });
     }
   });
 
@@ -175,6 +194,7 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
 
     const { threadId } = req.body as { threadId: string };
 
+    const log = logger.child({ route: "POST /graph/auto-candidate", threadId });
     try {
       const snapshot = await compiledGraph.getState({
         configurable: { thread_id: threadId },
@@ -183,6 +203,7 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
       const messages = state?.messages;
 
       if (!messages?.length) {
+        log.warn("Auto-candidate requested but no messages found", { threadId });
         return void res.status(404).json({ error: "No active interview found for this session." });
       }
 
@@ -193,6 +214,8 @@ export function createGraphRouter(compiledGraph: CompiledGraph): Router {
             : `You: ${m.content}`,
         )
         .join("\n");
+
+      log.debug("Generating auto-candidate answer", { messageCount: messages.length });
 
       // Simulates a real (imperfect) candidate — not a model answer
       const candidateRes = await interviewerModel.invoke(`
@@ -211,10 +234,12 @@ Respond to the interviewer's last message as the candidate. Respond ONLY with wh
         (candidateRes.content as string).trim() ||
         "Could you clarify what you're looking for?";
 
+      log.info("Auto-candidate answer generated successfully");
       res.json({ candidateAnswer });
     } catch (error) {
-      console.error("/graph/auto-candidate error:", error);
-      res.status(500).json({ error: String(error) });
+      const err = error instanceof Error ? error : new Error(String(error));
+      log.error("Failed to generate auto-candidate answer", { err: err.message, stack: err.stack });
+      res.status(500).json({ error: "Failed to generate candidate answer." });
     }
   });
 

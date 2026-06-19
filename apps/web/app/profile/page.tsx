@@ -43,17 +43,17 @@ export default async function ProfilePage() {
   ])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fafafa' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
       <nav className="inner-nav" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '20px 32px', borderBottom: '1px solid #1a1a1a',
+        padding: '20px 32px', borderBottom: '1px solid var(--border)',
       }}>
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}>
           <div style={{ width: 9, height: 9, borderRadius: '50%', background: 'var(--accent)' }} />
-          <span style={{ fontSize: 16, fontWeight: 600, color: '#fafafa' }}>DevGrill</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)' }}>DevGrill</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/interview" style={{ fontSize: 13.5, color: '#8f8f8f', textDecoration: 'none' }}>
+          <Link href="/interview" style={{ fontSize: 13.5, color: 'var(--fg-muted)', textDecoration: 'none' }}>
             New interview
           </Link>
           <UserButton />
@@ -64,14 +64,14 @@ export default async function ProfilePage() {
 
         {/* ── Active sessions ── */}
         <section style={{ marginBottom: 52 }}>
-          <h2 style={{ fontSize: 13, fontWeight: 600, color: '#555', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-dim)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 16 }}>
             Active sessions
           </h2>
 
           {active.length === 0 ? (
             <div style={{
-              border: '1px dashed #2a2a2a', borderRadius: 12, padding: '32px 24px',
-              textAlign: 'center', color: '#555', fontSize: 14,
+              border: '1px dashed var(--border-strong)', borderRadius: 12, padding: '32px 24px',
+              textAlign: 'center', color: 'var(--fg-dim)', fontSize: 14,
             }}>
               No active interviews.{' '}
               <Link href="/interview" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
@@ -86,18 +86,18 @@ export default async function ProfilePage() {
                 })
                 return (
                   <div key={row.id} style={{
-                    background: '#111', border: '1px solid #252525', borderRadius: 12,
+                    background: 'var(--bg-card)', border: '1px solid var(--border-strong)', borderRadius: 12,
                     padding: '16px 20px', display: 'flex', alignItems: 'center',
                     justifyContent: 'space-between', gap: 16,
                   }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{
-                        fontSize: 14, fontWeight: 600, color: '#f0f0f0', marginBottom: 3,
+                        fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 3,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                       }}>
                         {row.question_title ?? 'Interview in progress'}
                       </div>
-                      <div style={{ fontSize: 12, color: '#555' }}>
+                      <div style={{ fontSize: 12, color: 'var(--fg-dim)' }}>
                         {[row.target_role, row.target_company].filter(Boolean).join(' · ')} · {date}
                       </div>
                     </div>
@@ -118,12 +118,12 @@ export default async function ProfilePage() {
 
         {/* ── Completed interviews ── */}
         <section>
-          <h2 style={{ fontSize: 13, fontWeight: 600, color: '#555', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 13, fontWeight: 600, color: 'var(--fg-dim)', letterSpacing: '.08em', textTransform: 'uppercase', marginBottom: 16 }}>
             Past interviews
           </h2>
 
           {completed.length === 0 ? (
-            <p style={{ fontSize: 14, color: '#555' }}>No completed interviews yet.</p>
+            <p style={{ fontSize: 14, color: 'var(--fg-dim)' }}>No completed interviews yet.</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {completed.map(row => {
@@ -134,18 +134,18 @@ export default async function ProfilePage() {
                 return (
                   <Link key={row.id} href={`/profile/${row.id}`} style={{ textDecoration: 'none' }}>
                     <div style={{
-                      background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+                      background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
                       padding: '16px 20px', display: 'flex', alignItems: 'center',
                       justifyContent: 'space-between', gap: 16,
                     }}>
                       <div style={{ minWidth: 0 }}>
                         <div style={{
-                          fontSize: 14, fontWeight: 600, color: '#f0f0f0', marginBottom: 3,
+                          fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 3,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                         }}>
                           {row.question_title ?? 'Untitled question'}
                         </div>
-                        <div style={{ fontSize: 12, color: '#555' }}>
+                        <div style={{ fontSize: 12, color: 'var(--fg-dim)' }}>
                           {[row.target_role, row.target_company].filter(Boolean).join(' · ')} · {date}
                         </div>
                       </div>
@@ -154,7 +154,7 @@ export default async function ProfilePage() {
                           flexShrink: 0, fontSize: 18, fontWeight: 700,
                           color: score >= 80 ? '#4ade80' : score >= 60 ? '#facc15' : '#f87171',
                         }}>
-                          {score}<span style={{ fontSize: 11, fontWeight: 400, color: '#555', marginLeft: 2 }}>/100</span>
+                          {score}<span style={{ fontSize: 11, fontWeight: 400, color: 'var(--fg-dim)', marginLeft: 2 }}>/100</span>
                         </div>
                       )}
                     </div>

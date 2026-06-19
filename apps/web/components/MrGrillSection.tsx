@@ -34,7 +34,7 @@ const STYLES = `
   .mrg-chip:hover {
     background:    rgba(249,115,22,0.10) !important;
     border-color:  rgba(249,115,22,0.35) !important;
-    color: #c0c0c0 !important;
+    color: var(--fg-2) !important;
   }
 
   .mrg-avatar-outer:hover .mrg-glow-blob,
@@ -169,7 +169,7 @@ export default function MrGrillSection() {
         className="mrg-section"
         style={{
           padding: '96px 24px',
-          borderTop: '1px solid #161616',
+          borderTop: '1px solid var(--border)',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -249,8 +249,8 @@ export default function MrGrillSection() {
                     height: 210,
                     borderRadius: '50%',
                     overflow: 'hidden',
-                    border: '1px solid #252525',
-                    boxShadow: '0 0 0 1px #161616, 0 28px 64px -16px rgba(0,0,0,0.85)',
+                    border: '1px solid var(--border-strong)',
+                    boxShadow: '0 0 0 1px var(--border), 0 28px 64px -16px rgba(0,0,0,0.85)',
                   }}
                 >
                   <AvatarIllustration />
@@ -268,7 +268,7 @@ export default function MrGrillSection() {
                     height: 16,
                     borderRadius: '50%',
                     background: '#22c55e',
-                    border: '2.5px solid #0a0a0a',
+                    border: '2.5px solid var(--bg)',
                   }}
                 />
               </div>
@@ -280,8 +280,8 @@ export default function MrGrillSection() {
                   alignItems: 'center',
                   gap: 9,
                   padding: '7px 14px',
-                  background: '#0d0d0d',
-                  border: '1px solid #1e1e1e',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
                   borderRadius: 10,
                 }}
               >
@@ -300,7 +300,7 @@ export default function MrGrillSection() {
                     fontFamily: "'Geist Mono', monospace",
                     fontSize: 11,
                     fontWeight: 500,
-                    color: '#555',
+                    color: 'var(--fg-dim)',
                     letterSpacing: '0.05em',
                   }}
                 >
@@ -314,7 +314,7 @@ export default function MrGrillSection() {
                   style={{
                     fontSize: 20,
                     fontWeight: 700,
-                    color: '#e8e8e8',
+                    color: 'var(--fg-2)',
                     letterSpacing: '-0.025em',
                   }}
                 >
@@ -339,7 +339,7 @@ export default function MrGrillSection() {
                       flexShrink: 0,
                     }}
                   />
-                  <span style={{ fontSize: 12.5, color: '#555', letterSpacing: '0.01em' }}>
+                  <span style={{ fontSize: 12.5, color: 'var(--fg-dim)', letterSpacing: '0.01em' }}>
                     Online — Ready to interview
                   </span>
                 </div>
@@ -375,7 +375,7 @@ export default function MrGrillSection() {
                   fontWeight: 700,
                   lineHeight: 1.18,
                   letterSpacing: '-0.03em',
-                  color: '#efefef',
+                  color: 'var(--fg-2)',
                   maxWidth: 510,
                 }}
               >
@@ -393,18 +393,18 @@ export default function MrGrillSection() {
                   maxWidth: 520,
                 }}
               >
-                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#727272' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: 'var(--fg-muted)' }}>
                   Mr. Grill is DevGrill&rsquo;s AI interviewer, built to simulate the
                   experience of a senior engineer conducting a real technical interview.
                 </p>
-                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#727272' }}>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: 'var(--fg-muted)' }}>
                   He reads your resume, understands the role you&rsquo;re applying for,
                   and generates interview questions tailored to your background&mdash;not
                   generic question banks. Throughout the interview, he&rsquo;ll challenge
                   assumptions, probe design decisions, and push deeper whenever an answer
                   feels incomplete.
                 </p>
-                <p style={{ fontSize: 15, lineHeight: 1.75, color: '#606060', fontWeight: 500 }}>
+                <p style={{ fontSize: 15, lineHeight: 1.75, color: 'var(--fg-dim)', fontWeight: 500 }}>
                   No hints. No easy passes. Just honest practice.
                 </p>
               </div>
@@ -420,12 +420,12 @@ export default function MrGrillSection() {
                     className="mrg-chip"
                     style={{
                       padding: '7px 15px',
-                      background: '#0d0d0d',
-                      border: '1px solid #1f1f1f',
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border)',
                       borderRadius: 8,
                       fontSize: 12.5,
                       fontWeight: 500,
-                      color: '#7a7a7a',
+                      color: 'var(--fg-muted)',
                     }}
                   >
                     {label}
@@ -438,8 +438,8 @@ export default function MrGrillSection() {
                 className="mrg-callout"
                 style={{
                   padding: '20px 24px',
-                  background: '#0b0b0b',
-                  border: '1px solid #1a1a1a',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
                   borderLeft: '2px solid rgba(249,115,22,0.45)',
                   borderRadius: 12,
                   maxWidth: 480,
@@ -449,7 +449,7 @@ export default function MrGrillSection() {
                   style={{
                     fontSize: 14,
                     lineHeight: 1.7,
-                    color: '#5e5e5e',
+                    color: 'var(--fg-dim)',
                     fontStyle: 'italic',
                     letterSpacing: '-0.005em',
                   }}

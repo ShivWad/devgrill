@@ -1,6 +1,7 @@
 import { buildChecklist, emptyPhaseNotes } from "../../utils/checklist";
 import { stripThinkTags } from "../../utils/text";
 import { interviewerModel } from "../../models";
+import { logger } from "../../utils/logger";
 import type { InterviewStateType, Message, Phase, QuestionConfig } from "../state";
 
 
@@ -69,24 +70,36 @@ export const setupNode = async (
   state: InterviewStateType,
 ): Promise<Partial<InterviewStateType>> => {
   const { question } = state;
+  const log = logger.child({ node: "setup" });
 
   if (!question) {
+    log.error("Setup node called before question was generated");
     throw new Error("setupNode: state.question is null — question_generator must run first");
   }
 
+  log.info("Setting up interview session", { questionTitle: question.title, difficulty: question.difficulty });
+
   const checklist = buildChecklist(question);
 
-  const openingPrompt = buildOpeningPrompt(question);
-  const openingRes = await interviewerModel.invoke(openingPrompt);
-  const openingContent = stripThinkTags(openingRes.content as string).replace(/^["']|["']$/g, "");
+  let openingContent: string;
+  try {
+    const openingPrompt = buildOpeningPrompt(question);
+    const openingRes = await interviewerModel.invoke(openingPrompt);
+    openingContent = stripThinkTags(openingRes.content as string).replace(/^["']|["']$/g, "");
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("Failed to generate opening message", { err: error.message, stack: error.stack });
+    throw error;
+  }
 
-  
   const openingMessage: Message = {
     role: "interviewer",
     content: openingContent,
     phase: "requirements",
     timestamp: Date.now(),
   };
+
+  log.info("Setup complete — opening message generated");
 
   return {
     currentPhase: "requirements",

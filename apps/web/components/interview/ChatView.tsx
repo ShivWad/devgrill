@@ -30,7 +30,7 @@ export function ChatView(p: ChatProps) {
   const isDisabled = p.sending || p.autoLoading;
 
   return (
-    <div style={{ height: "100vh", background: "#0a0a0a", display: "flex", flexDirection: "column" }}>
+    <div style={{ height: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
       <style>{GLOBAL_STYLES}</style>
 
       <Nav
@@ -45,9 +45,9 @@ export function ChatView(p: ChatProps) {
                   fontSize: 11,
                   padding: "4px 10px",
                   borderRadius: 6,
-                  background: p.questionOpen ? "var(--accent-soft)" : "#111",
-                  border: `1px solid ${p.questionOpen ? "var(--accent-line)" : "#2a2a2a"}`,
-                  color: p.questionOpen ? "var(--accent)" : "#777",
+                  background: p.questionOpen ? "var(--accent-soft)" : "var(--bg-input)",
+                  border: `1px solid ${p.questionOpen ? "var(--accent-line)" : "var(--border-strong)"}`,
+                  color: p.questionOpen ? "var(--accent)" : "var(--fg-muted)",
                   cursor: "pointer",
                   marginRight: 6,
                   transition: "all 0.15s",
@@ -67,7 +67,7 @@ export function ChatView(p: ChatProps) {
                   borderRadius: 6,
                   background: i === phaseIdx ? "var(--accent-soft)" : "transparent",
                   border: `1px solid ${i === phaseIdx ? "var(--accent-line)" : "transparent"}`,
-                  color: i === phaseIdx ? "var(--accent)" : i < phaseIdx ? "#4a4a4a" : "#555",
+                  color: i === phaseIdx ? "var(--accent)" : i < phaseIdx ? "var(--fg-faint)" : "var(--fg-dim)",
                   fontWeight: i === phaseIdx ? 600 : 400,
                   transition: "all 0.2s",
                 }}
@@ -111,7 +111,7 @@ export function ChatView(p: ChatProps) {
                     fontSize: 10,
                     letterSpacing: ".12em",
                     textTransform: "uppercase",
-                    color: you ? "var(--accent)" : isQuestion ? "var(--accent)" : "#4e4e4e",
+                    color: you ? "var(--accent)" : isQuestion ? "var(--accent)" : "var(--fg-faint)",
                     padding: "0 4px",
                   }}
                 >
@@ -126,16 +126,16 @@ export function ChatView(p: ChatProps) {
                     lineHeight: 1.7,
                     borderRadius: you ? "16px 16px 5px 16px" : "16px 16px 16px 5px",
                     background: isQuestion
-                      ? "rgba(var(--accent-rgb, 100,200,150), 0.04)"
+                      ? "var(--accent-soft)"
                       : you
                         ? "var(--accent)"
-                        : "#141414",
-                    color: you ? "#0a0a0a" : "#dcdcdc",
+                        : "var(--bg-card)",
+                    color: you ? "#0a0a0a" : "var(--fg-2)",
                     border: isQuestion
                       ? "1px solid var(--accent-line)"
                       : you
                         ? "none"
-                        : "1px solid #222",
+                        : "1px solid var(--border)",
                     fontWeight: you ? 500 : 400,
                     whiteSpace: "pre-wrap",
                   }}
@@ -149,14 +149,14 @@ export function ChatView(p: ChatProps) {
           {/* Typing indicator */}
           {p.sending && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, animation: "fadeUp .3s ease both" }}>
-              <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "#4e4e4e", padding: "0 4px" }}>
+              <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 10, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--fg-faint)", padding: "0 4px" }}>
                 Mr. Grill
               </span>
-              <div style={{ display: "flex", gap: 5, alignItems: "center", padding: "14px 18px", borderRadius: 16, background: "#141414", border: "1px solid #222" }}>
+              <div style={{ display: "flex", gap: 5, alignItems: "center", padding: "14px 18px", borderRadius: 16, background: "var(--bg-card)", border: "1px solid var(--border)" }}>
                 {[0, 0.15, 0.3].map((delay, i) => (
                   <span
                     key={i}
-                    style={{ width: 6, height: 6, borderRadius: "50%", background: "#666", display: "inline-block", animation: `dotPulse 1.1s infinite ${delay}s` }}
+                    style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--fg-dim)", display: "inline-block", animation: `dotPulse 1.1s infinite ${delay}s` }}
                   />
                 ))}
               </div>
@@ -165,7 +165,7 @@ export function ChatView(p: ChatProps) {
 
           {p.isComplete && (
             <div style={{ padding: "12px 4px", animation: "fadeUp .4s ease both" }}>
-              <p style={{ fontSize: 13, color: "#555", textAlign: "center" }}>
+              <p style={{ fontSize: 13, color: "var(--fg-dim)", textAlign: "center" }}>
                 Interview complete — loading your report…
               </p>
             </div>
@@ -186,19 +186,19 @@ export function ChatView(p: ChatProps) {
 
       {/* Input bar */}
       {!p.isComplete && (
-        <div className="chat-input-bar" style={{ borderTop: "1px solid #181818", padding: "14px 24px", background: "#0a0a0a" }}>
+        <div className="chat-input-bar" style={{ borderTop: "1px solid var(--border)", padding: "14px 24px", background: "var(--bg)" }}>
           <div style={{ maxWidth: 740, margin: "0 auto", display: "flex", gap: 10, alignItems: "flex-end" }}>
             <textarea
               ref={p.inputRef}
               rows={1}
               style={{
                 flex: 1,
-                background: "#111",
-                border: "1px solid #252525",
+                background: "var(--bg-input)",
+                border: "1px solid var(--border-strong)",
                 borderRadius: 11,
                 padding: "11px 14px",
                 fontSize: 14.5,
-                color: "#e8e8e8",
+                color: "var(--fg-2)",
                 fontFamily: "inherit",
                 outline: "none",
                 resize: "none",
@@ -216,12 +216,12 @@ export function ChatView(p: ChatProps) {
               onKeyDown={p.onKeyDown}
               disabled={isDisabled}
             />
-<button
+            <button
               onClick={p.onSend}
               disabled={isDisabled || !p.input.trim()}
               style={{
-                background: isDisabled || !p.input.trim() ? "#1e1e1e" : "var(--accent)",
-                color: isDisabled || !p.input.trim() ? "#444" : "#0a0a0a",
+                background: isDisabled || !p.input.trim() ? "var(--bg-elevated)" : "var(--accent)",
+                color: isDisabled || !p.input.trim() ? "var(--fg-faint)" : "#0a0a0a",
                 border: "none",
                 borderRadius: 11,
                 padding: "11px 18px",

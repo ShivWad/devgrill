@@ -1,4 +1,5 @@
 import type { InterviewStateType, PhaseFeedback } from "../state";
+import { logger } from "../../utils/logger";
 
 // ─────────────────────────────────────────────────────────
 // Helpers
@@ -68,7 +69,13 @@ export async function reportGeneratorNode(
 ): Promise<Partial<InterviewStateType>> {
   const { scores, phaseFeedback, question, targetRole, targetCompany } = state;
 
+  const log = logger.child({ node: "report_generator" });
+
   if (!scores || !question) {
+    log.error("Cannot generate report — missing scores or question", {
+      hasScores: !!scores,
+      hasQuestion: !!question,
+    });
     throw new Error(
       "reportGeneratorNode: scores and question must be set before this node runs",
     );
@@ -128,8 +135,11 @@ export async function reportGeneratorNode(
 
   const reportMarkdown = lines.join("\n");
 
-  console.log("\n=== REPORT PREVIEW (first 500 chars) ===");
-  console.log(reportMarkdown.slice(0, 500) + "...");
+  log.info("Report generated", {
+    previewChars: 500,
+    totalChars: reportMarkdown.length,
+    questionTitle: question.title,
+  });
 
   return { reportMarkdown };
 }

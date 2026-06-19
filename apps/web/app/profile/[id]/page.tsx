@@ -13,10 +13,10 @@ function ScoreBar({ label, value, max = 5 }: { label: string; value: number; max
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-        <span style={{ fontSize: 13, color: '#aaa' }}>{label}</span>
+        <span style={{ fontSize: 13, color: 'var(--fg-muted)' }}>{label}</span>
         <span style={{ fontSize: 13, fontWeight: 600, color }}>{value}/{max}</span>
       </div>
-      <div style={{ height: 4, background: '#222', borderRadius: 2 }}>
+      <div style={{ height: 4, background: 'var(--border)', borderRadius: 2 }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 2 }} />
       </div>
     </div>
@@ -64,12 +64,12 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
   })
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fafafa' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
       <nav className="inner-nav" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '20px 32px', borderBottom: '1px solid #1a1a1a',
+        padding: '20px 32px', borderBottom: '1px solid var(--border)',
       }}>
-        <Link href="/profile" style={{ fontSize: 13, color: '#666', textDecoration: 'none' }}>
+        <Link href="/profile" style={{ fontSize: 13, color: 'var(--fg-dim)', textDecoration: 'none' }}>
           ← Past interviews
         </Link>
         <UserButton />
@@ -78,14 +78,14 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '48px 24px' }}>
         {/* Header */}
         <div style={{ marginBottom: 36 }}>
-          <div style={{ fontSize: 12, color: '#555', marginBottom: 10, fontFamily: 'monospace', letterSpacing: '.1em', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 12, color: 'var(--fg-dim)', marginBottom: 10, fontFamily: 'monospace', letterSpacing: '.1em', textTransform: 'uppercase' }}>
             {[row.targetRole, row.targetCompany].filter(Boolean).join(' · ')}{' · '}{date}
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
             {row.questionTitle ?? 'Interview report'}
           </h1>
           {row.questionDescription && (
-            <p style={{ fontSize: 14, color: '#888', marginTop: 12, lineHeight: 1.6 }}>
+            <p style={{ fontSize: 14, color: 'var(--fg-muted)', marginTop: 12, lineHeight: 1.6 }}>
               {row.questionDescription}
             </p>
           )}
@@ -95,7 +95,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
           <>
             {/* Overall score */}
             <div style={{
-              background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
               padding: '24px 28px', marginBottom: 20,
               display: 'flex', alignItems: 'center', gap: 24,
             }}>
@@ -106,22 +106,22 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
                 }}>
                   {scores.overall}
                 </div>
-                <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>out of 100</div>
+                <div style={{ fontSize: 12, color: 'var(--fg-dim)', marginTop: 2 }}>out of 100</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: '#f0f0f0', marginBottom: 4 }}>
+                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 4 }}>
                   {scores.levelAssessment}
                 </div>
-                <div style={{ fontSize: 13, color: '#777', lineHeight: 1.5 }}>{scores.roleReadiness}</div>
+                <div style={{ fontSize: 13, color: 'var(--fg-muted)', lineHeight: 1.5 }}>{scores.roleReadiness}</div>
               </div>
             </div>
 
             {/* Rubric bars */}
             <div style={{
-              background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+              background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
               padding: '24px 28px', marginBottom: 20,
             }}>
-              <h2 style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+              <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-dim)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '.08em' }}>
                 Breakdown
               </h2>
               {RUBRIC_LABELS.map(([label, key]) => {
@@ -134,26 +134,26 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
             {/* Gap analysis */}
             {scores.gapAnalysis && (
               <div style={{
-                background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+                background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
                 padding: '24px 28px', marginBottom: 20,
               }}>
-                <h2 style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-dim)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   Gap analysis
                 </h2>
-                <p style={{ fontSize: 14, color: '#bbb', lineHeight: 1.65 }}>{scores.gapAnalysis}</p>
+                <p style={{ fontSize: 14, color: 'var(--fg-muted)', lineHeight: 1.65 }}>{scores.gapAnalysis}</p>
               </div>
             )}
 
             {/* Resume advice */}
             {scores.resumeAdvice && (
               <div style={{
-                background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
+                background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12,
                 padding: '24px 28px', marginBottom: 20,
               }}>
-                <h2 style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+                <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-dim)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '.08em' }}>
                   Resume advice
                 </h2>
-                <p style={{ fontSize: 14, color: '#bbb', lineHeight: 1.65 }}>{scores.resumeAdvice}</p>
+                <p style={{ fontSize: 14, color: 'var(--fg-muted)', lineHeight: 1.65 }}>{scores.resumeAdvice}</p>
               </div>
             )}
           </>
@@ -162,13 +162,13 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
         {/* Phase feedback */}
         {phaseFeedback.length > 0 && (
           <div style={{ marginBottom: 32 }}>
-            <h2 style={{ fontSize: 12, fontWeight: 600, color: '#555', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+            <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-dim)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '.08em' }}>
               Phase breakdown
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {phaseFeedback.map((pf, i) => (
                 <div key={i} style={{
-                  background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: '18px 22px',
+                  background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: '18px 22px',
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                     <span style={{ fontSize: 14, fontWeight: 600, textTransform: 'capitalize' }}>
@@ -185,7 +185,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
                     <div style={{ marginBottom: 8 }}>
                       <div style={{ fontSize: 11, color: '#4ade80', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>Strengths</div>
                       {pf.strengths.map((s, j) => (
-                        <div key={j} style={{ fontSize: 13, color: '#999', paddingLeft: 8, marginBottom: 2 }}>· {s}</div>
+                        <div key={j} style={{ fontSize: 13, color: 'var(--fg-muted)', paddingLeft: 8, marginBottom: 2 }}>· {s}</div>
                       ))}
                     </div>
                   )}
@@ -193,7 +193,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
                     <div>
                       <div style={{ fontSize: 11, color: '#f87171', marginBottom: 4, letterSpacing: '.06em', textTransform: 'uppercase' }}>Gaps</div>
                       {pf.gaps.map((g, j) => (
-                        <div key={j} style={{ fontSize: 13, color: '#999', paddingLeft: 8, marginBottom: 2 }}>· {g}</div>
+                        <div key={j} style={{ fontSize: 13, color: 'var(--fg-muted)', paddingLeft: 8, marginBottom: 2 }}>· {g}</div>
                       ))}
                     </div>
                   )}

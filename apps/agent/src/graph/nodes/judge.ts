@@ -1,6 +1,7 @@
 import { extractJson, stripThinkTags } from "../../utils/text";
 import { invokeWithMetrics } from "../../utils/metrics";
 import { interviewerModel, judgeModel, reasoningModel } from "../../models";
+import { logger } from "../../utils/logger";
 import type {
   InterviewStateType,
   Message,
@@ -247,30 +248,35 @@ export async function judgeNode(
   const { result } = await invokeWithMetrics("judge", judgeModel, prompt);
   const raw = stripThinkTags(result.content as string);
 
+  const log = logger.child({ node: "judge" });
+
   let parsed: JudgeOutput;
   try {
     parsed = JSON.parse(extractJson(raw));
   } catch (err) {
-    console.error("JUDGE RAW OUTPUT (failed to parse):");
-    console.error(raw);
+    log.error("Failed to parse judge JSON output", {
+      err: err instanceof Error ? err.message : String(err),
+      rawOutput: raw.slice(0, 500),
+    });
     throw new Error(`judgeNode: failed to parse JSON — ${err}`);
   }
 
   if (!parsed.scores || !parsed.phaseFeedback) {
-    console.error("JUDGE RAW OUTPUT (missing scores/phaseFeedback):");
-    console.error(raw);
+    log.error("Judge response missing required keys", {
+      hasScores: !!parsed.scores,
+      hasPhaseFeedback: !!parsed.phaseFeedback,
+      rawOutput: raw.slice(0, 500),
+    });
     throw new Error("judgeNode: response missing 'scores' or 'phaseFeedback'");
   }
 
-  console.log("\n=== JUDGE SCORES ===");
-  console.table(
-    Object.entries(parsed.scores)
-      .filter(([, v]) => typeof v === "number")
-      .map(([k, v]) => ({ category: k, score: v })),
-  );
-  console.log(`Overall: ${parsed.scores.overall}/100`);
-  console.log(`Level: ${parsed.scores.levelAssessment}`);
-  console.log(`Role readiness: ${parsed.scores.roleReadiness}`);
+  log.info("Interview scored", {
+    overall: parsed.scores.overall,
+    levelAssessment: parsed.scores.levelAssessment,
+    rubric: Object.fromEntries(
+      Object.entries(parsed.scores).filter(([, v]) => typeof v === "number"),
+    ),
+  });
 
   return {
     scores: parsed.scores,

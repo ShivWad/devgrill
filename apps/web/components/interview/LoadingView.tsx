@@ -35,7 +35,7 @@ export function LoadingView({ resuming = false }: LoadingViewProps) {
     <div
       style={{
         minHeight: "100vh",
-        background: "#0a0a0a",
+        background: "var(--bg)",
         display: "flex",
         flexDirection: "column",
       }}
@@ -98,10 +98,10 @@ export function LoadingView({ resuming = false }: LoadingViewProps) {
         <div style={{ textAlign: "center", maxWidth: 360 }}>
           {resuming ? (
             <>
-              <p style={{ fontSize: 16, fontWeight: 500, color: "#e0e0e0", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 16, fontWeight: 500, color: "var(--fg-2)", lineHeight: 1.5 }}>
                 Calling Mr. Grill back…
               </p>
-              <p style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
+              <p style={{ fontSize: 13, color: "var(--fg-dim)", marginTop: 8 }}>
                 Restoring your session.
               </p>
             </>
@@ -111,7 +111,7 @@ export function LoadingView({ resuming = false }: LoadingViewProps) {
                 style={{
                   fontSize: 16,
                   fontWeight: 500,
-                  color: "#e0e0e0",
+                  color: "var(--fg-2)",
                   lineHeight: 1.5,
                   opacity: visible ? 1 : 0,
                   transform: visible ? "translateY(0)" : "translateY(6px)",
@@ -120,7 +120,7 @@ export function LoadingView({ resuming = false }: LoadingViewProps) {
               >
                 {LOADING_MSGS[idx]}
               </p>
-              <p style={{ fontSize: 13, color: "#555", marginTop: 8 }}>
+              <p style={{ fontSize: 13, color: "var(--fg-dim)", marginTop: 8 }}>
                 Question generation usually takes 20–40 s.
               </p>
             </>

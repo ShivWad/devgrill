@@ -68,8 +68,8 @@ export default function ChatDemo() {
       <div style={{
         width: '100%',
         maxWidth: 580,
-        background: 'linear-gradient(180deg,#121212,#0d0d0d)',
-        border: '1px solid #242424',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-strong)',
         borderRadius: 18,
         boxShadow: '0 30px 60px -30px rgba(0,0,0,.8)',
         overflow: 'hidden',
@@ -80,20 +80,20 @@ export default function ChatDemo() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: '14px 18px',
-          borderBottom: '1px solid #1d1d1d',
+          borderBottom: '1px solid var(--border)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
             <span style={{
               fontFamily: "'Geist Mono', monospace",
               fontSize: 12,
-              color: '#9a9a9a',
+              color: 'var(--fg-muted)',
               letterSpacing: '.04em',
             }}>
               live session · system design
             </span>
           </div>
-          <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#555' }}>28:14</span>
+          <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: 'var(--fg-dim)' }}>28:14</span>
         </div>
 
         {/* messages */}
@@ -121,7 +121,7 @@ export default function ChatDemo() {
                   fontSize: 10.5,
                   letterSpacing: '.1em',
                   textTransform: 'uppercase',
-                  color: you ? 'var(--accent)' : '#6b6b6b',
+                  color: you ? 'var(--accent)' : 'var(--fg-dim)',
                   padding: '0 4px',
                 }}>
                   {you ? 'You' : 'DevGrill'}
@@ -132,9 +132,9 @@ export default function ChatDemo() {
                   fontSize: 14.5,
                   lineHeight: 1.5,
                   borderRadius: you ? '15px 15px 5px 15px' : '15px 15px 15px 5px',
-                  background: you ? 'var(--accent)' : '#181818',
-                  color: you ? 'var(--accent-ink)' : '#dcdcdc',
-                  border: you ? 'none' : '1px solid #2a2a2a',
+                  background: you ? 'var(--accent)' : 'var(--bg-elevated)',
+                  color: you ? 'var(--accent-ink)' : 'var(--fg-2)',
+                  border: you ? 'none' : '1px solid var(--border-strong)',
                   fontWeight: you ? 500 : 400,
                 }}>
                   {m.text}
@@ -155,12 +155,12 @@ export default function ChatDemo() {
                 alignItems: 'center',
                 padding: '13px 16px',
                 borderRadius: 15,
-                background: isYouTyping ? 'var(--accent-soft)' : '#181818',
-                border: `1px solid ${isYouTyping ? 'var(--accent-line)' : '#2a2a2a'}`,
+                background: isYouTyping ? 'var(--accent-soft)' : 'var(--bg-elevated)',
+                border: `1px solid ${isYouTyping ? 'var(--accent-line)' : 'var(--border-strong)'}`,
               }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#999', display: 'inline-block', animation: 'dotPulse 1s infinite' }} />
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#999', display: 'inline-block', animation: 'dotPulse 1s infinite 0.15s' }} />
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#999', display: 'inline-block', animation: 'dotPulse 1s infinite 0.3s' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--fg-dim)', display: 'inline-block', animation: 'dotPulse 1s infinite' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--fg-dim)', display: 'inline-block', animation: 'dotPulse 1s infinite 0.15s' }} />
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--fg-dim)', display: 'inline-block', animation: 'dotPulse 1s infinite 0.3s' }} />
               </div>
             </div>
           )}

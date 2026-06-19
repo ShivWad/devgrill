@@ -2,6 +2,7 @@ import { interrupt } from "@langchain/langgraph";
 import { invokeWithMetrics } from "../../utils/metrics";
 import { stripThinkTags } from "../../utils/text";
 import { interviewerModel } from "../../models";
+import { logger } from "../../utils/logger";
 import type {
   InterviewStateType,
   InterviewStrategy,
@@ -287,11 +288,26 @@ function buildPrompt(state: InterviewStateType): string {
 export async function interviewerNode(
   state: InterviewStateType,
 ): Promise<Partial<InterviewStateType>> {
-  const prompt = buildPrompt(state);
+  const log = logger.child({ node: "interviewer", phase: state.currentPhase, turnCount: state.turnCount });
+
+  let prompt: string;
+  try {
+    prompt = buildPrompt(state);
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    log.error("Failed to build interviewer prompt", { err: error.message, stack: error.stack });
+    throw error;
+  }
 
   const { result } = await invokeWithMetrics("interviewer", interviewerModel, prompt);
 
   const content = stripThinkTags(result.content as string).replace(/^["']|["']$/g, "");
+
+  if (!content) {
+    log.warn("Interviewer produced empty response — using fallback");
+  }
+
+  log.debug("Interviewer message generated", { phase: state.currentPhase, contentLength: content.length });
 
   const interviewerMessage: Message = {
     role: "interviewer",

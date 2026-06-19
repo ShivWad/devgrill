@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server'
 import { createRequire } from 'module'
 import { NextRequest, NextResponse } from 'next/server'
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs'
+import { routeLogger } from '@/lib/logger'
 
 // pdfjs-dist v6 requires a non-empty workerSrc even on the server.
 // Resolve the worker file path via Node module resolution.
@@ -11,19 +12,33 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `file://${_require.resolve('pdfjs-dist/
 const MAX_PDF_BYTES = 5 * 1024 * 1024 // 5 MB
 
 export async function POST(req: NextRequest) {
+  const log = routeLogger({ route: 'POST /api/parse-pdf' })
+
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const formData = await req.formData()
+  let formData: FormData
+  try {
+    formData = await req.formData()
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    log.error('Failed to parse form data', { userId, err: error.message })
+    return NextResponse.json({ error: 'Invalid form data' }, { status: 400 })
+  }
+
   const file = formData.get('file')
 
   if (!file || typeof file === 'string') {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
-  if ((file as File).size > MAX_PDF_BYTES) {
+  const fileSize = (file as File).size
+  if (fileSize > MAX_PDF_BYTES) {
+    log.warn('PDF upload rejected — file too large', { userId, fileSize })
     return NextResponse.json({ error: 'File exceeds 5 MB limit' }, { status: 413 })
   }
+
+  log.debug('Parsing PDF', { userId, fileSize, fileName: (file as File).name })
 
   try {
     const buffer = new Uint8Array(await (file as File).arrayBuffer())
@@ -40,9 +55,11 @@ export async function POST(req: NextRequest) {
       pages.push(text)
     }
 
+    log.info('PDF parsed successfully', { userId, numPages: pdf.numPages })
     return NextResponse.json({ text: pages.join('\n\n') })
-  } catch (e) {
-    console.error('PDF parse error:', e)
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err))
+    log.error('PDF parsing failed', { userId, err: error.message, stack: error.stack })
     return NextResponse.json({ error: 'Failed to parse PDF' }, { status: 422 })
   }
 }

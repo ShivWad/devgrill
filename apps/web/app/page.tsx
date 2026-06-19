@@ -7,7 +7,7 @@ import { LandingNav } from '@/components/LandingNav'
 export default async function HomePage() {
   const { userId } = await auth()
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <LandingNav userId={userId} />
 
       <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 24px' }}>
@@ -55,7 +55,7 @@ export default async function HomePage() {
               lineHeight: 1.04,
               fontWeight: 700,
               letterSpacing: '-0.03em',
-              color: '#fafafa',
+              color: 'var(--fg)',
               maxWidth: 760,
               textWrap: 'balance' as never,
             }}
@@ -69,7 +69,7 @@ export default async function HomePage() {
               position: 'relative',
               fontSize: 18,
               lineHeight: 1.6,
-              color: '#a0a0a0',
+              color: 'var(--fg-muted)',
               maxWidth: 520,
               marginTop: 24,
               textWrap: 'pretty' as never,
@@ -98,20 +98,6 @@ export default async function HomePage() {
             >
               Start a mock interview
             </Link>
-            <div
-              className="btn-secondary"
-              style={{
-                background: '#161616',
-                color: '#e5e5e5',
-                fontSize: 15,
-                fontWeight: 500,
-                padding: '14px 24px',
-                borderRadius: 11,
-                border: '1px solid #2a2a2a',
-              }}
-            >
-              Watch a 2-min session
-            </div>
           </div>
         </section>
 
@@ -141,8 +127,8 @@ export default async function HomePage() {
               <div
                 key={pill.title}
                 style={{
-                  background: '#111',
-                  border: '1px solid #1f1f1f',
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
                   borderRadius: 14,
                   padding: 22,
                 }}
@@ -160,10 +146,10 @@ export default async function HomePage() {
                 }}>
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 7 }}>
+                <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 7 }}>
                   {pill.title}
                 </div>
-                <div style={{ fontSize: 14, lineHeight: 1.55, color: '#8c8c8c' }}>
+                <div style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--fg-muted)' }}>
                   {pill.body}
                 </div>
               </div>
@@ -174,7 +160,7 @@ export default async function HomePage() {
       </div>
 
       {/* ── How it works ── */}
-      <section id="how-it-works" style={{ borderTop: '1px solid #161616', padding: '88px 24px 80px' }}>
+      <section id="how-it-works" style={{ borderTop: '1px solid var(--bg-elevated)', padding: '88px 24px 80px' }}>
         <div style={{ maxWidth: 1140, margin: '0 auto' }}>
 
           {/* Section header */}
@@ -193,7 +179,7 @@ export default async function HomePage() {
               fontSize: 36,
               fontWeight: 700,
               letterSpacing: '-0.03em',
-              color: '#efefef',
+              color: 'var(--fg-2)',
               marginBottom: 18,
               lineHeight: 1.12,
             }}>
@@ -203,11 +189,11 @@ export default async function HomePage() {
             <p style={{
               fontSize: 14.5,
               lineHeight: 1.7,
-              color: '#525252',
+              color: 'var(--fg-dim)',
               maxWidth: 620,
               padding: '14px 18px',
-              background: '#0d0d0d',
-              border: '1px solid #1a1a1a',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
               borderLeft: '2px solid rgba(249,115,22,0.4)',
               borderRadius: 10,
             }}>
@@ -220,7 +206,7 @@ export default async function HomePage() {
           <div className="how-it-works-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
 
             {/* Step 1 */}
-            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
@@ -232,19 +218,19 @@ export default async function HomePage() {
                     <path d="M7.5 1v8M4.5 4L7.5 1l3 3M2 10v3a1 1 0 001 1h9a1 1 0 001-1v-3" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 01</span>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '.08em' }}>Step 01</span>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 10, letterSpacing: '-0.01em' }}>
                 Upload your resume and job description
               </h3>
-              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--fg-dim)' }}>
                 Paste the JD you applied to and upload your resume. DevGrill reads both and
                 identifies exactly where your experience falls short of what the role requires.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
@@ -256,12 +242,12 @@ export default async function HomePage() {
                     <path d="M2 2h11a1 1 0 011 1v7a1 1 0 01-1 1H8l-3 2v-2H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="var(--accent)" strokeWidth="1.4" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 02</span>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '.08em' }}>Step 02</span>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 10, letterSpacing: '-0.01em' }}>
                 Get grilled by Mr. Grill
               </h3>
-              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--fg-dim)' }}>
                 A personalized system design interview based on your actual skill gaps — not
                 generic questions. Four phases: requirements, design, deep dive, and scale.
                 Mr. Grill doesn&rsquo;t let you off easy.
@@ -269,7 +255,7 @@ export default async function HomePage() {
             </div>
 
             {/* Step 3 */}
-            <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
@@ -283,12 +269,12 @@ export default async function HomePage() {
                     <rect x="11" y="1" width="3" height="13" rx="1" fill="var(--accent)"/>
                   </svg>
                 </div>
-                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: '#444', letterSpacing: '.08em' }}>Step 03</span>
+                <span style={{ fontFamily: "'Geist Mono', monospace", fontSize: 11, color: 'var(--fg-faint)', letterSpacing: '.08em' }}>Step 03</span>
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f0f0f0', marginBottom: 10, letterSpacing: '-0.01em' }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 10, letterSpacing: '-0.01em' }}>
                 See your honest score
               </h3>
-              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: '#5e5e5e' }}>
+              <p style={{ fontSize: 13.5, lineHeight: 1.7, color: 'var(--fg-dim)' }}>
                 A detailed report with phase-by-phase scores, specific quotes from your answers
                 as evidence, gap analysis, and resume advice tailored to the role you&rsquo;re targeting.
               </p>
@@ -297,7 +283,7 @@ export default async function HomePage() {
           </div>
 
           {/* Footer note */}
-          <p style={{ marginTop: 28, fontSize: 13.5, color: '#3e3e3e', textAlign: 'center', lineHeight: 1.6 }}>
+          <p style={{ marginTop: 28, fontSize: 13.5, color: 'var(--fg-faint)', textAlign: 'center', lineHeight: 1.6 }}>
             The whole interview takes 20–30 minutes. The feedback tells you exactly what to work on before the real thing.
           </p>
 
@@ -315,19 +301,19 @@ export default async function HomePage() {
         flexWrap: 'wrap',
         gap: 14,
         padding: '24px 36px',
-        borderTop: '1px solid #181818',
+        borderTop: '1px solid var(--border)',
         maxWidth: 1140,
         margin: '0 auto',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#cfcfcf' }}>DevGrill</span>
-          <span style={{ fontSize: 13, color: '#5a5a5a', marginLeft: 6 }}>Get grilled. Get hired.</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-2)' }}>DevGrill</span>
+          <span style={{ fontSize: 13, color: 'var(--fg-dim)', marginLeft: 6 }}>Get grilled. Get hired.</span>
         </div>
-        <div style={{ display: 'flex', gap: 22, fontSize: 13, color: '#6e6e6e' }}>
-          <Link href="/pricing" style={{ color: '#6e6e6e', textDecoration: 'none' }} className="nav-link">Pricing</Link>
+        <div style={{ display: 'flex', gap: 22, fontSize: 13, color: 'var(--fg-dim)' }}>
+          <Link href="/pricing" style={{ color: 'var(--fg-dim)', textDecoration: 'none' }} className="nav-link">Pricing</Link>
           <span className="nav-link">Docs</span>
-          <span style={{ color: '#4a4a4a' }}>© 2026</span>
+          <span style={{ color: 'var(--fg-faint)' }}>© 2026</span>
         </div>
       </footer>
     </div>
