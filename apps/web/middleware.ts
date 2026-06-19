@@ -11,6 +11,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/interview/invoke',
   '/api/interview/resume',
   '/api/interview/state/(.*)',
+  '/api/interview/auto-candidate',
 ])
 
 export default clerkMiddleware(async (auth, req) => {

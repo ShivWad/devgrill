@@ -216,7 +216,7 @@ export function ChatView(p: ChatProps) {
               onKeyDown={p.onKeyDown}
               disabled={isDisabled}
             />
-            <button
+<button
               onClick={p.onSend}
               disabled={isDisabled || !p.input.trim()}
               style={{

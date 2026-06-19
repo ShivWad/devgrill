@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import type { Phase, RubricScores, PhaseFeedback } from '@devgrill/shared'
@@ -16,6 +16,19 @@ import { GLOBAL_STYLES, type Msg, type TurnResponse, type View } from '@/compone
 
 function InterviewPage() {
   const { isSignedIn } = useUser()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isSignedIn) return
+    fetch('/api/interview/claim', { method: 'POST' })
+      .then(r => r.json())
+      .then(({ threadId }) => {
+        if (threadId && view === 'setup') {
+          router.replace(`/interview?threadId=${threadId}`)
+        }
+      })
+      .catch(() => {})
+  }, [isSignedIn])
 
   // View state
   const [view, setView] = useState<View>('setup')
@@ -278,7 +291,7 @@ function TrialGateView() {
           You&rsquo;ve completed 2 guest interviews. Sign up for free to keep going — no credit card required.
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/sign-up" style={{
+          <Link href="/sign-up?redirect_url=/interview" style={{
             display: 'inline-block', padding: '11px 24px',
             background: 'var(--accent)', color: 'var(--accent-ink)',
             borderRadius: 9, fontSize: 14, fontWeight: 600, textDecoration: 'none',
@@ -286,7 +299,7 @@ function TrialGateView() {
           }}>
             Sign up free →
           </Link>
-          <Link href="/sign-in" style={{
+          <Link href="/sign-in?redirect_url=/interview" style={{
             display: 'inline-block', padding: '11px 24px',
             background: '#161616', border: '1px solid #2a2a2a',
             color: '#ccc', borderRadius: 9, fontSize: 14, fontWeight: 500, textDecoration: 'none',
@@ -311,7 +324,7 @@ function SignupBanner() {
       <span style={{ fontSize: 14, color: '#888' }}>
         Sign up to track progress, compare scores, and save all your interviews.
       </span>
-      <Link href="/sign-up" style={{
+      <Link href="/sign-up?redirect_url=/interview" style={{
         padding: '7px 16px',
         background: 'var(--accent)', color: 'var(--accent-ink)',
         borderRadius: 7, fontSize: 13, fontWeight: 600, textDecoration: 'none',
