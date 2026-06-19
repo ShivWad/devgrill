@@ -8,7 +8,7 @@ Turborepo monorepo for a mock system design interview agent. Two deployable serv
 
 - `apps/web` — Next.js 15 (App Router, TypeScript) on Vercel (**active**)
 - `apps/agent` — LangGraph.js service (Node.js + Express) on Railway (**active**)
-- `packages/shared` — Shared types package (**currently empty** — types live in `apps/agent/src/graph/state.ts` and mirrored in `apps/web/lib/types.ts`)
+- `packages/shared` — Shared types package (`packages/shared/src/index.ts` — source of truth for all shared types)
 
 ## Commands
 
@@ -32,13 +32,14 @@ cd apps/agent && tsx src/test-generateQuestion.ts  # isolated question generator
 cd apps/agent && tsx src/test-setup.ts             # setup node + opening message
 cd apps/agent && tsx src/test-interviewer.ts       # interviewer across all phases
 cd apps/agent && tsx src/test-jude.ts              # judge node
+cd apps/agent && tsx src/test-phaseEvaluator.ts    # phase evaluator
 ```
 
 **Env**: Each app has its own `.env` file (`apps/agent/.env` and `apps/web/.env`). See `.env.example` at root for all required keys.
 
-Agent needs: `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (fallback for `@clerk/express`).
+Agent needs: `DEEPSEEK_API_KEY`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (fallback for `@clerk/express`), `ALLOWED_ORIGIN`, `AGENT_INTERNAL_SECRET`.
 
-Web needs: `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `AGENT_URL`.
+Web needs: `DATABASE_URL`, `CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_WEBHOOK_SECRET`, `AGENT_URL`.
 
 ## Architecture
 
@@ -85,6 +86,8 @@ Internal only (Next.js calls these, not the browser). All routes require `requir
 | `GET /api/interview/state/[threadId]` | Proxy → `/graph/state/:threadId` |
 | `POST /api/interview/auto-candidate` | Proxy → `/graph/auto-candidate` |
 | `POST /api/parse-pdf` | Server-side PDF text extraction (pdfjs-dist v6) |
+| `POST /api/waitlist` | Waitlist signup |
+| `POST /api/webhooks/clerk` | Clerk webhook (user sync) |
 
 ### Web pages
 
@@ -94,12 +97,14 @@ Internal only (Next.js calls these, not the browser). All routes require `requir
 | `/interview` | Interview UI — setup form, chat, report. Accepts `?threadId=` to restore a session |
 | `/profile` | Active sessions (continue) + completed interviews (view report) |
 | `/profile/[id]` | Full interview report: scores, rubric bars, phase feedback |
+| `/pricing` | Pricing page (waitlist) |
 | `/sign-in`, `/sign-up` | Clerk hosted auth pages |
 
 ### State persistence
 
-- **Postgres (Neon)** — LangGraph checkpoints (`@langchain/langgraph-checkpoint-postgres`) + `interviews` table (see below). Both agent and web connect to the same Neon DB.
+- **Postgres (Neon)** — LangGraph checkpoints (`@langchain/langgraph-checkpoint-postgres`) + `interviews` table (agent-managed). Both agent and web connect to the same Neon DB.
 - `interviews` table is created automatically on agent startup (`server.ts → start()`). No migrations needed.
+- Web also has a Drizzle schema (`apps/web/lib/schema.ts`) with `interviews`, `subscriptions`, and `waitlist` tables.
 
 #### `interviews` table schema
 
@@ -114,6 +119,7 @@ phase_feedback  JSONB       -- PhaseFeedback[]
 report_markdown TEXT
 target_role     TEXT
 target_company  TEXT
+client_ip       TEXT
 created_at      TIMESTAMPTZ
 ```
 
@@ -122,7 +128,7 @@ Row inserted at interview start (scores = null). Updated with results on complet
 ### Auth flow
 
 - **Clerk** handles auth for both services.
-- Web: `clerkMiddleware()` in `middleware.ts` protects `/interview`, `/profile`, and `/api/*` routes. API routes also call `auth()` as defense-in-depth.
+- Web: `clerkMiddleware()` in `middleware.ts` protects `/interview`, `/profile`, and `/api/*` routes.
 - Agent: `clerkMiddleware()` + `requireClerkAuth` middleware verifies the Bearer JWT forwarded by Next.js. Pass publishable key explicitly since `@clerk/express` reads `CLERK_PUBLISHABLE_KEY` (not `NEXT_PUBLIC_`).
 - Web → Agent auth: Next.js proxy routes call `getToken()` from `auth()` and forward `Authorization: Bearer <token>`.
 
@@ -150,7 +156,7 @@ Standalone dev tool. Compiles graph with `MemorySaver` (one-shot, no persistence
 
 ## Key Types
 
-**`apps/agent/src/graph/state.ts`** (source of truth):
+**`packages/shared/src/index.ts`** (source of truth — imported by both agent and web):
 
 `QuestionConfig` — generated question with `expectedClarifications`, `keyComponents`, `commonPitfalls`, `deepDiveTargets`, `whyThisQuestion`.
 
@@ -162,18 +168,23 @@ Standalone dev tool. Compiles graph with `MemorySaver` (one-shot, no persistence
 
 `Phase` — `"requirements" | "design" | "deep_dive" | "scale"`.
 
-**`apps/web/lib/types.ts`** — mirrors `RubricScores` and `PhaseFeedback` for use in web server components.
+## Utilities
 
-## Utilities (`apps/agent/utils.ts`)
+`apps/agent/utils.ts` is a barrel re-export of `src/utils/*` (backward-compat). Actual implementations:
 
-| Function | Purpose |
-|---|---|
-| `invokeWithMetrics(nodeName, model, prompt)` | Invokes model, captures duration/token counts |
-| `extractJson(raw)` | Strips `<think>` tags + markdown fences, extracts outermost `{...}` |
-| `buildChecklist(question)` | Creates coverage checklist from `QuestionConfig` |
-| `stripThinkTags(raw)` | Removes `<think>...</think>` blocks |
-| `routeAfterEvaluator(state)` | Conditional edge fn — returns `"interviewer"` or `"judge"` |
-| `printSessionSummary()` | Prints aggregated token/duration metrics |
+| Function | File | Purpose |
+|---|---|---|
+| `invokeWithMetrics(nodeName, model, prompt)` | `src/utils/metrics.ts` | Invokes model, captures duration/token counts |
+| `printSessionSummary()` | `src/utils/metrics.ts` | Prints aggregated token/duration metrics |
+| `extractJson(raw)` | `src/utils/text.ts` | Strips `<think>` tags + markdown fences, extracts outermost `{...}` |
+| `sanitizeUserInput(text)` | `src/utils/text.ts` | Sanitizes user-supplied text before it enters prompts |
+| `stripThinkTags(raw)` | `src/utils/text.ts` | Removes `<think>...</think>` blocks |
+| `slugify(text)` | `src/utils/text.ts` | `text → lowercase_underscore_slug` |
+| `buildChecklist(question)` | `src/utils/checklist.ts` | Creates coverage checklist from `QuestionConfig` |
+| `emptyPhaseNotes()` | `src/utils/checklist.ts` | Returns `{requirements: "", design: "", deep_dive: "", scale: ""}` |
+| `routeAfterEvaluator(state)` | `src/utils/routing.ts` | Conditional edge fn — returns `"interviewer"` or `"judge"` |
+
+`NodeMetric` type captures: `node`, `durationMs`, `inputTokens`, `cachedTokens`, `outputTokens`, `reasoningTokens`, `totalTokens`.
 
 ## Interviewer Prompt Rules
 
@@ -185,7 +196,7 @@ Uses `pdfjs-dist` v6 server-side. Requires `GlobalWorkerOptions.workerSrc` to po
 
 ## Build Phases
 
-- **Phase 1** ✅: All 8 nodes, graph, CLI runner, Express server with all routes
+- **Phase 1** ✅: All 8 nodes, graph assembly, CLI runner, Express server with all routes
 - **Phase 2** ✅: Next.js UI (interview chat, report view, profile/history), Clerk auth, PDF upload, Postgres persistence, session restore
-- **Phase 3**: Postgres checkpointing swap ✅ (done — using `PostgresSaver`)
-- **Phase 4**: Polish + deploy (Vercel + Railway)
+- **Phase 3** ✅: PostgresSaver checkpointing, judge node, report generator, structured scoring
+- **Phase 4**: Polish + deploy (pricing, waitlist, fallbacks, hardening)
