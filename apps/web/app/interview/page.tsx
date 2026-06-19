@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+import Link from 'next/link'
 import type { Phase, RubricScores, PhaseFeedback } from '@devgrill/shared'
 
 import { LoadingView } from '@/components/interview/LoadingView'
@@ -13,6 +15,8 @@ import { GLOBAL_STYLES, type Msg, type TurnResponse, type View } from '@/compone
 // ── State ─────────────────────────────────────────────────────────────────────
 
 function InterviewPage() {
+  const { isSignedIn } = useUser()
+
   // View state
   const [view, setView] = useState<View>('setup')
   const [resumingSession, setResumingSession] = useState(false)
@@ -106,6 +110,7 @@ function InterviewPage() {
         body: JSON.stringify({ threadId, resumeText, jdText, targetRole, targetCompany }),
       })
       const data = await res.json()
+      if (res.status === 403 && data.error === 'trial_limit') { setView('trial_gate'); return }
       if (res.status === 429) throw new Error("You've started too many interviews this hour. Take a break and try again shortly.")
       if (!res.ok) throw new Error(data.error ?? 'Failed to start interview')
 
@@ -190,17 +195,22 @@ function InterviewPage() {
 
   // ── Render ───────────────────────────────────────────────────────────────────
 
+  if (view === 'trial_gate') return <TrialGateView />
+
   if (view === 'loading') return <LoadingView resuming={resumingSession} />
 
   if (view === 'complete' && scores) {
     return (
-      <ReportView
-        scores={scores}
-        phaseFeedback={phaseFeedback}
-        questionTitle={questionTitle || 'System Design Interview'}
-        targetRole={targetRole}
-        targetCompany={targetCompany}
-      />
+      <>
+        {!isSignedIn && <SignupBanner />}
+        <ReportView
+          scores={scores}
+          phaseFeedback={phaseFeedback}
+          questionTitle={questionTitle || 'System Design Interview'}
+          targetRole={targetRole}
+          targetCompany={targetCompany}
+        />
+      </>
     )
   }
 
@@ -240,6 +250,76 @@ function InterviewPage() {
       onTargetCompany={setTargetCompany}
       onStart={startInterview}
     />
+  )
+}
+
+// ── Guest UI components ───────────────────────────────────────────────────────
+
+function TrialGateView() {
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0a0a0a', color: '#fafafa',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '24px',
+    }}>
+      <div style={{ textAlign: 'center', maxWidth: 420 }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: '50%',
+          background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 24px', fontSize: 22,
+        }}>
+          🔥
+        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 12 }}>
+          You&rsquo;ve used your free interviews
+        </h1>
+        <p style={{ fontSize: 15, color: '#666', lineHeight: 1.65, marginBottom: 32 }}>
+          You&rsquo;ve completed 2 guest interviews. Sign up for free to keep going — no credit card required.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Link href="/sign-up" style={{
+            display: 'inline-block', padding: '11px 24px',
+            background: 'var(--accent)', color: 'var(--accent-ink)',
+            borderRadius: 9, fontSize: 14, fontWeight: 600, textDecoration: 'none',
+            boxShadow: '0 8px 20px -8px var(--accent-line)',
+          }}>
+            Sign up free →
+          </Link>
+          <Link href="/sign-in" style={{
+            display: 'inline-block', padding: '11px 24px',
+            background: '#161616', border: '1px solid #2a2a2a',
+            color: '#ccc', borderRadius: 9, fontSize: 14, fontWeight: 500, textDecoration: 'none',
+          }}>
+            Sign in
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SignupBanner() {
+  return (
+    <div style={{
+      background: '#0f0f0f',
+      borderBottom: '1px solid rgba(249,115,22,0.2)',
+      padding: '14px 24px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      gap: 16, flexWrap: 'wrap', textAlign: 'center',
+    }}>
+      <span style={{ fontSize: 14, color: '#888' }}>
+        Sign up to track progress, compare scores, and save all your interviews.
+      </span>
+      <Link href="/sign-up" style={{
+        padding: '7px 16px',
+        background: 'var(--accent)', color: 'var(--accent-ink)',
+        borderRadius: 7, fontSize: 13, fontWeight: 600, textDecoration: 'none',
+        whiteSpace: 'nowrap',
+      }}>
+        Create free account →
+      </Link>
+    </div>
   )
 }
 

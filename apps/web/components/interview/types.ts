@@ -2,7 +2,7 @@ import type { Phase, RubricScores } from "@devgrill/shared";
 
 // ── View states ───────────────────────────────────────────────────────────────
 
-export type View = "setup" | "loading" | "chat" | "complete";
+export type View = "setup" | "loading" | "chat" | "complete" | "trial_gate";
 
 export type Msg = { role: "interviewer" | "candidate"; content: string };
 
