@@ -18,12 +18,10 @@ function InterviewPage() {
   const [resumingSession, setResumingSession] = useState(false)
 
   // Setup form fields
-  const [resumeTab, setResumeTab] = useState<'paste' | 'upload'>('paste')
   const [resumeText, setResumeText] = useState('')
   const [jdText, setJdText] = useState('')
   const [targetRole, setTargetRole] = useState('')
   const [targetCompany, setTargetCompany] = useState('')
-  const [pdfParsing, setPdfParsing] = useState(false)
 
   // Interview session
   const [threadId, setThreadId] = useState(() => crypto.randomUUID())
@@ -94,38 +92,6 @@ function InterviewPage() {
   }, [msgs, sending])
 
   // ── Handlers ────────────────────────────────────────────────────────────────
-
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setError(null)
-
-    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-      setPdfParsing(true)
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-        const res = await fetch('/api/parse-pdf', { method: 'POST', body: formData })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error ?? 'Failed to parse PDF')
-        setResumeText(data.text)
-        setResumeTab('paste')
-      } catch {
-        setError('Could not parse the PDF. Try pasting the text instead.')
-        setResumeTab('paste')
-      } finally {
-        setPdfParsing(false)
-      }
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = ev => {
-      setResumeText((ev.target?.result as string) ?? '')
-      setResumeTab('paste')
-    }
-    reader.readAsText(file)
-  }
 
   async function startInterview() {
     if (!resumeText.trim()) { setError('Resume is required.'); return }
@@ -263,19 +229,15 @@ function InterviewPage() {
 
   return (
     <SetupView
-      resumeTab={resumeTab}
       resumeText={resumeText}
       jdText={jdText}
       targetRole={targetRole}
       targetCompany={targetCompany}
       error={error}
-      pdfParsing={pdfParsing}
-      onResumeTabChange={setResumeTab}
       onResumeText={setResumeText}
       onJdText={setJdText}
       onTargetRole={setTargetRole}
       onTargetCompany={setTargetCompany}
-      onFileUpload={handleFileUpload}
       onStart={startInterview}
     />
   )

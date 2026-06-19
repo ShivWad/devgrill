@@ -1,24 +1,19 @@
 'use client'
 
-import { useRef } from "react";
 import { UserButton } from "@clerk/nextjs";
 import { Nav } from "./Nav";
 import { GLOBAL_STYLES } from "./types";
 
 export interface SetupProps {
-  resumeTab: "paste" | "upload";
   resumeText: string;
   jdText: string;
   targetRole: string;
   targetCompany: string;
   error: string | null;
-  pdfParsing: boolean;
-  onResumeTabChange: (t: "paste" | "upload") => void;
   onResumeText: (v: string) => void;
   onJdText: (v: string) => void;
   onTargetRole: (v: string) => void;
   onTargetCompany: (v: string) => void;
-  onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStart: () => void;
 }
 
@@ -43,23 +38,8 @@ const label: React.CSSProperties = {
   display: "block",
 };
 
-function tabStyle(active: boolean): React.CSSProperties {
-  return {
-    fontSize: 13,
-    fontWeight: 500,
-    padding: "6px 14px",
-    borderRadius: 7,
-    border: "none",
-    cursor: "pointer",
-    background: active ? "var(--bg-elevated)" : "transparent",
-    color: active ? "var(--fg-2)" : "var(--fg-dim)",
-    transition: "background 0.15s, color 0.15s",
-  };
-}
-
 /** Setup form where the user pastes resume/JD and kicks off the interview. */
 export function SetupView(p: SetupProps) {
-  const fileRef = useRef<HTMLInputElement>(null);
 
   return (
     <div style={{ minHeight: "100vh", background: "var(--bg)", display: "flex", flexDirection: "column" }}>
@@ -80,66 +60,13 @@ export function SetupView(p: SetupProps) {
               <label style={{ ...label, margin: 0 }}>
                 Resume <span style={{ color: "#f97316" }}>*</span>
               </label>
-              <div style={{ display: "flex", gap: 2, background: "var(--bg-card)", border: "1px solid var(--border)", borderRadius: 9, padding: 3 }}>
-                <button style={tabStyle(p.resumeTab === "paste")} onClick={() => p.onResumeTabChange("paste")}>
-                  Paste
-                </button>
-                <button
-                  style={tabStyle(p.resumeTab === "upload")}
-                  onClick={() => {
-                    p.onResumeTabChange("upload");
-                    setTimeout(() => fileRef.current?.click(), 50);
-                  }}
-                >
-                  Upload file
-                </button>
-              </div>
             </div>
 
-            {p.resumeTab === "paste" ? (
-              <textarea
-                style={{ ...field, minHeight: 160 }}
-                placeholder="Paste your resume text here…"
-                value={p.resumeText}
-                onChange={(e) => p.onResumeText(e.target.value)}
-              />
-            ) : (
-              <div
-                style={{
-                  ...field,
-                  minHeight: 100,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 8,
-                  cursor: "pointer",
-                  color: "var(--fg-dim)",
-                  resize: "none",
-                }}
-                onClick={() => fileRef.current?.click()}
-              >
-                {p.pdfParsing ? (
-                  <span style={{ fontSize: 13, color: "var(--fg-muted)" }}>Parsing PDF…</span>
-                ) : (
-                  <>
-                    <span style={{ fontSize: 22 }}>↑</span>
-                    <span style={{ fontSize: 14 }}>Click to upload a PDF or .txt file</span>
-                    {p.resumeText && (
-                      <span style={{ fontSize: 12, color: "#5a8a5a" }}>
-                        ✓ File loaded ({p.resumeText.length.toLocaleString()} chars)
-                      </span>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".pdf,.txt,.md"
-              style={{ display: "none" }}
-              onChange={p.onFileUpload}
+            <textarea
+              style={{ ...field, minHeight: 160 }}
+              placeholder="Paste your resume text here…"
+              value={p.resumeText}
+              onChange={(e) => p.onResumeText(e.target.value)}
             />
           </div>
 
