@@ -1,69 +1,14 @@
 import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
-import { UserButton } from '@clerk/nextjs'
 import ChatDemo from '@/components/ChatDemo'
 import MrGrillSection from '@/components/MrGrillSection'
+import { LandingNav } from '@/components/LandingNav'
 
 export default async function HomePage() {
   const { userId } = await auth()
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a' }}>
-      {/* ── Nav ── */}
-      <nav className="lp-nav" style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '22px 36px',
-        borderBottom: '1px solid #181818',
-        maxWidth: 1140,
-        margin: '0 auto',
-        width: '100%',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-          <div style={{
-            width: 10,
-            height: 10,
-            borderRadius: '50%',
-            background: 'var(--accent)',
-            boxShadow: '0 0 14px var(--accent-line)',
-          }} />
-          <span style={{ fontSize: 17, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.01em' }}>
-            DevGrill
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-          <div className="nav-links" style={{ display: 'flex', gap: 26, fontSize: 14, color: '#8f8f8f' }}>
-            <a href="#how-it-works" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">How it works</a>
-            <Link href="/pricing" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">Pricing</Link>
-            {!userId && (
-              <Link href="/sign-in" style={{ color: '#8f8f8f', textDecoration: 'none' }} className="nav-link">
-                Sign in
-              </Link>
-            )}
-          </div>
-          {userId ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Link href="/profile" style={{
-                fontSize: 13.5, fontWeight: 500, color: '#fafafa',
-                border: '1px solid #2e2e2e', borderRadius: 9, padding: '8px 15px',
-                textDecoration: 'none',
-              }}>
-                My sessions
-              </Link>
-              <UserButton />
-            </div>
-          ) : (
-            <Link href="/sign-in" className="btn-nav" style={{
-              fontSize: 13.5, fontWeight: 500, color: '#fafafa',
-              border: '1px solid #2e2e2e', borderRadius: 9, padding: '8px 15px',
-              textDecoration: 'none',
-            }}>
-              Start free
-            </Link>
-          )}
-        </div>
-      </nav>
+      <LandingNav userId={userId} />
 
       <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 24px' }}>
         {/* ── Hero ── */}
@@ -244,7 +189,7 @@ export default async function HomePage() {
             }}>
               How it works
             </div>
-            <h2 style={{
+            <h2 className="how-it-works-h2" style={{
               fontSize: 36,
               fontWeight: 700,
               letterSpacing: '-0.03em',
@@ -272,7 +217,7 @@ export default async function HomePage() {
           </div>
 
           {/* Step cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div className="how-it-works-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
 
             {/* Step 1 */}
             <div style={{ background: '#0f0f0f', border: '1px solid #1e1e1e', borderRadius: 14, padding: '26px 24px' }}>

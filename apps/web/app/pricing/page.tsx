@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 const STYLES = `
@@ -13,10 +13,6 @@ const STYLES = `
   .pricing-card:nth-child(3) { animation-delay: 0.16s; }
 
   .notify-input:focus { outline: none; border-color: rgba(249,115,22,0.4) !important; }
-
-  @media (max-width: 860px) {
-    .pricing-grid { grid-template-columns: 1fr !important; max-width: 420px !important; }
-  }
 `
 
 const FEATURES = [
@@ -47,16 +43,28 @@ function Feature({ text }: { text: string }) {
 function NotifyInput({ tier }: { tier: string }) {
   const key = `dg_notify_${tier}`
   const [email, setEmail] = useState('')
-  const [done, setDone] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return !!localStorage.getItem(key)
-  })
+  const [done, setDone] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  function submit(e: React.FormEvent) {
+  useEffect(() => {
+    if (localStorage.getItem(key)) setDone(true)
+  }, [key])
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return
-    localStorage.setItem(key, email.trim())
-    setDone(true)
+    if (!email.trim() || loading) return
+    setLoading(true)
+    try {
+      await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), tier }),
+      })
+      localStorage.setItem(key, email.trim())
+      setDone(true)
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (done) {
@@ -95,7 +103,7 @@ function NotifyInput({ tier }: { tier: string }) {
           transition: 'border-color 0.15s ease',
         }}
       />
-      <button type="submit" style={{
+      <button type="submit" disabled={loading} style={{
         padding: '9px 14px',
         background: '#161616',
         border: '1px solid #2a2a2a',
@@ -119,7 +127,7 @@ export default function PricingPage() {
       <style>{STYLES}</style>
 
       {/* Nav */}
-      <nav style={{
+      <nav className="pricing-nav" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '22px 36px', borderBottom: '1px solid #181818',
         maxWidth: 1140, margin: '0 auto',
@@ -128,7 +136,7 @@ export default function PricingPage() {
           <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)', boxShadow: '0 0 14px var(--accent-line)' }} />
           <span style={{ fontSize: 17, fontWeight: 600, color: '#fafafa', letterSpacing: '-0.01em' }}>DevGrill</span>
         </Link>
-        <div style={{ display: 'flex', gap: 24, fontSize: 14, color: '#8f8f8f' }}>
+        <div className="pricing-nav-links" style={{ display: 'flex', gap: 24, fontSize: 14, color: '#8f8f8f' }}>
           <Link href="/" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Home</Link>
           <Link href="/interview" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Start interview</Link>
           <Link href="/sign-in" style={{ color: '#8f8f8f', textDecoration: 'none' }}>Sign in</Link>
@@ -147,7 +155,7 @@ export default function PricingPage() {
         }}>
           Pricing
         </div>
-        <h1 style={{
+        <h1 className="pricing-h1" style={{
           fontSize: 46,
           fontWeight: 700,
           letterSpacing: '-0.03em',
@@ -163,10 +171,10 @@ export default function PricingPage() {
       </section>
 
       {/* Cards */}
-      <div style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 96px' }}>
+      <div className="pricing-wrap" style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 96px' }}>
         <div
           className="pricing-grid"
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, alignItems: 'start' }}
+          style={{ display: 'grid', gap: 16, alignItems: 'start' }}
         >
 
           {/* ── Free ── */}

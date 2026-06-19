@@ -44,7 +44,7 @@ export default async function ProfilePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', color: '#fafafa' }}>
-      <nav style={{
+      <nav className="inner-nav" style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '20px 32px', borderBottom: '1px solid #1a1a1a',
       }}>

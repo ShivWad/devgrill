@@ -9,6 +9,13 @@ export const subscriptions = pgTable('subscriptions', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const waitlist = pgTable('waitlist', {
+  id:        uuid('id').primaryKey().defaultRandom(),
+  email:     text('email').notNull(),
+  tier:      text('tier').notNull(), // 'pro' | 'payg'
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const interviews = pgTable('interviews', {
   id:                  uuid('id').primaryKey().defaultRandom(),
   userId:              text('user_id').notNull(),

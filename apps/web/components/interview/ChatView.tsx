@@ -216,26 +216,7 @@ export function ChatView(p: ChatProps) {
               onKeyDown={p.onKeyDown}
               disabled={isDisabled}
             />
-            <button
-              onClick={p.onAutoAnswer}
-              disabled={isDisabled}
-              title="Generate an AI answer and send it automatically"
-              style={{
-                background: "#111",
-                color: isDisabled ? "#444" : "#777",
-                border: "1px solid #252525",
-                borderRadius: 11,
-                padding: "11px 14px",
-                fontSize: 13,
-                fontWeight: 500,
-                cursor: isDisabled ? "not-allowed" : "pointer",
-                whiteSpace: "nowrap",
-                transition: "color 0.15s",
-              }}
-            >
-              {p.autoLoading ? "…" : "Auto"}
-            </button>
-            <button
+<button
               onClick={p.onSend}
               disabled={isDisabled || !p.input.trim()}
               style={{

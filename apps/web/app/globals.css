@@ -9,6 +9,7 @@
 html {
   color-scheme: dark;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -17,6 +18,7 @@ body {
   font-family: 'Geist', -apple-system, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 :root {
@@ -82,9 +84,80 @@ body {
   border-color: #4e4e4e !important;
 }
 
+/* ── Pricing grid ── */
+.pricing-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+.pricing-grid > * {
+  min-width: 0;
+}
+
+/* ── Hamburger / mobile nav ── */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 2px;
+}
+.hamburger-btn span {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background: #aaa;
+  border-radius: 2px;
+  transition: opacity 0.15s, transform 0.2s;
+  transform-origin: center;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  border-bottom: 1px solid #181818;
+  background: #0a0a0a;
+  padding: 4px 20px 14px;
+}
+.mobile-menu a {
+  display: block;
+  font-size: 15px;
+  color: #8a8a8a;
+  text-decoration: none;
+  padding: 11px 2px;
+  border-bottom: 1px solid #141414;
+  transition: color 0.15s;
+}
+.mobile-menu a:last-child { border-bottom: none; }
+.mobile-menu a:hover { color: #e5e5e5; }
+.mobile-menu-cta { color: var(--accent) !important; font-weight: 600; }
+
+.nav-desktop-cta { display: flex; align-items: center; }
+.mobile-auth { display: none; align-items: center; }
+
 @media (max-width: 768px) {
   .nav-links {
-    display: none;
+    display: none !important;
+  }
+
+  .nav-desktop-cta {
+    display: none !important;
+  }
+
+  .mobile-auth {
+    display: flex !important;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .mobile-menu {
+    display: flex !important;
   }
 
   .lp-nav {
@@ -132,6 +205,36 @@ body {
   .lp-footer {
     padding: 20px 20px !important;
   }
+
+  .how-it-works-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .how-it-works-h2 {
+    font-size: 28px !important;
+  }
+
+  .inner-nav {
+    padding: 16px 20px !important;
+  }
+
+  .pricing-h1 {
+    font-size: 36px !important;
+  }
+
+  .pricing-nav {
+    padding: 18px 20px !important;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .pricing-nav-links {
+    display: none !important;
+  }
+
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -141,5 +244,10 @@ body {
 
   .hero-subtitle {
     font-size: 15px !important;
+  }
+
+  .pricing-wrap {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
   }
 }

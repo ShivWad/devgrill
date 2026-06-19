@@ -3,9 +3,18 @@ const STYLES = `
     from { opacity: 0; transform: translateY(22px); }
     to   { opacity: 1; transform: translateY(0);   }
   }
-  @keyframes mrgGlowPulse {
-    0%, 100% { opacity: 0.42; }
-    50%       { opacity: 0.82; }
+  @keyframes mrgBlobDrift {
+    0%   { transform: translate(0px,   0px)  scale(1);    opacity: 0.55; }
+    25%  { transform: translate(16px, -12px) scale(1.07); opacity: 0.75; }
+    50%  { transform: translate(-8px,  18px) scale(0.95); opacity: 0.60; }
+    75%  { transform: translate(-16px, -8px) scale(1.10); opacity: 0.80; }
+    100% { transform: translate(0px,   0px)  scale(1);    opacity: 0.55; }
+  }
+  @keyframes mrgBlobDrift2 {
+    0%   { transform: translate(0px,   0px)   scale(1);    opacity: 0.30; }
+    33%  { transform: translate(-14px, 14px)  scale(1.05); opacity: 0.50; }
+    66%  { transform: translate(12px, -16px)  scale(0.93); opacity: 0.38; }
+    100% { transform: translate(0px,   0px)   scale(1);    opacity: 0.30; }
   }
   @keyframes mrgPing {
     0%   { box-shadow: 0 0 0 0   rgba(34,197,94,0.55); }
@@ -13,9 +22,10 @@ const STYLES = `
     100% { box-shadow: 0 0 0 0   rgba(34,197,94,0);    }
   }
 
-  .mrg-section    { animation: mrgFadeUp 0.65s ease both; }
-  .mrg-glow-blob  { animation: mrgGlowPulse 4.2s ease-in-out infinite; }
-  .mrg-online-dot { animation: mrgPing 2.2s ease-in-out infinite; }
+  .mrg-section      { animation: mrgFadeUp 0.65s ease both; }
+  .mrg-glow-blob    { animation: mrgBlobDrift  7s ease-in-out infinite; }
+  .mrg-glow-blob-2  { animation: mrgBlobDrift2 9s ease-in-out infinite; }
+  .mrg-online-dot   { animation: mrgPing 2.2s ease-in-out infinite; }
 
   .mrg-chip {
     transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
@@ -27,7 +37,9 @@ const STYLES = `
     color: #c0c0c0 !important;
   }
 
-  .mrg-avatar-outer:hover .mrg-glow-blob {
+  .mrg-avatar-outer:hover .mrg-glow-blob,
+  .mrg-avatar-outer:hover .mrg-glow-blob-2 {
+    animation-play-state: paused;
     opacity: 1;
   }
 
@@ -196,24 +208,36 @@ export default function MrGrillSection() {
               style={{
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'flex-start',
+                alignItems: 'center',
                 gap: 22,
               }}
             >
               {/* Portrait */}
               <div className="mrg-avatar-outer" style={{ position: 'relative' }}>
-                {/* Ambient glow */}
+                {/* Outer drifting glow */}
                 <div
                   className="mrg-glow-blob"
                   aria-hidden="true"
                   style={{
                     position: 'absolute',
-                    inset: -20,
+                    inset: -36,
                     borderRadius: '50%',
-                    background: 'var(--accent-soft)',
-                    filter: 'blur(30px)',
+                    background: 'radial-gradient(circle, rgba(249,115,22,0.28) 0%, rgba(249,115,22,0.06) 70%)',
+                    filter: 'blur(22px)',
                     pointerEvents: 'none',
-                    transition: 'opacity 0.4s ease',
+                  }}
+                />
+                {/* Inner tighter glow — drifts on a different phase */}
+                <div
+                  className="mrg-glow-blob-2"
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: -12,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(249,115,22,0.22) 0%, rgba(249,115,22,0.0) 65%)',
+                    filter: 'blur(14px)',
+                    pointerEvents: 'none',
                   }}
                 />
 
