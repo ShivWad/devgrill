@@ -122,9 +122,17 @@ function NotifyInput({ tier }: { tier: string }) {
   )
 }
 
+function getLastType(): string {
+  if (typeof document === 'undefined') return ''
+  const m = document.cookie.match(/(?:^|;\s*)dg_last_type=([^;]+)/)
+  return m?.[1] ?? ''
+}
+
 export default function PricingPage() {
+  const [isTeal, setIsTeal] = useState(false)
+  useEffect(() => { setIsTeal(getLastType() === 'technical') }, [])
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
+    <div className={isTeal ? 'theme-teal' : ''} style={{ minHeight: '100vh', background: 'var(--bg)', color: 'var(--fg)' }}>
       <style>{STYLES}</style>
 
       {/* Nav */}

@@ -40,6 +40,33 @@
   --border-strong: #d5d5d5;
 }
 
+.picker-option:hover {
+  background: var(--bg-elevated);
+}
+
+.interview-card-orange {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.interview-card-orange:hover {
+  border-color: rgba(249,115,22,0.5) !important;
+  box-shadow: 0 0 0 1px rgba(249,115,22,0.15);
+}
+
+.interview-card-teal {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.interview-card-teal:hover {
+  border-color: rgba(20,184,166,0.5) !important;
+  box-shadow: 0 0 0 1px rgba(20,184,166,0.15);
+}
+
+.theme-teal {
+  --accent: #14b8a6;
+  --accent-ink: #0f172a;
+  --accent-soft: rgba(20, 184, 166, 0.14);
+  --accent-line: rgba(20, 184, 166, 0.4);
+}
+
 html {
   color-scheme: dark;
   scroll-behavior: smooth;

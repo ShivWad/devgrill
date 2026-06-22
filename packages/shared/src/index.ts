@@ -1,5 +1,7 @@
 export type Phase = "requirements" | "design" | "deep_dive" | "scale";
 
+export type TechPhase = "warm_up" | "core_concepts" | "design_coding" | "deep_dive";
+
 export type PhaseAction = "stay" | "advance" | "end";
 
 export interface Message {
@@ -45,6 +47,46 @@ export interface RubricScores {
 
 export interface PhaseFeedback {
   phase: Phase;
+  score: number;
+  strengths: string[];
+  gaps: string[];
+  specificQuotes: string[];
+}
+
+export interface TechQuestionConfig {
+  title: string;
+  description: string;
+  difficulty: "junior" | "mid" | "senior";
+  whyThisQuestion: string;
+  topicsToExplore: string[];
+  expectedKnowledgeAreas: string[];
+  optionalCodingPrompt?: string;
+}
+
+export interface TechInterviewStrategy {
+  resumeStrengths: string[];
+  resumeGaps: string[];
+  techStack: string[];
+  companyContext: string;
+  probingStrategy: string;
+}
+
+export interface TechRubricScores {
+  languageProficiency: number;  // 0-5
+  csFundamentals: number;       // 0-5
+  problemSolving: number;       // 0-5
+  codeQuality: number;          // 0-5
+  designThinking: number;       // 0-5
+  communication: number;        // 0-5
+  overall: number;              // 0-100 weighted
+  levelAssessment: string;
+  roleReadiness: string;
+  gapAnalysis: string;
+  resumeAdvice: string;
+}
+
+export interface TechPhaseFeedback {
+  phase: TechPhase;
   score: number;
   strengths: string[];
   gaps: string[];

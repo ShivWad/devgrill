@@ -1,13 +1,16 @@
 import Link from 'next/link'
 import { auth } from '@clerk/nextjs/server'
+import { cookies } from 'next/headers'
 import ChatDemo from '@/components/ChatDemo'
 import MrGrillSection from '@/components/MrGrillSection'
 import { LandingNav } from '@/components/LandingNav'
 
 export default async function HomePage() {
   const { userId } = await auth()
+  const cookieStore = await cookies()
+  const isTeal = cookieStore.get('dg_last_type')?.value === 'technical'
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div className={isTeal ? 'theme-teal' : ''} style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <LandingNav userId={userId} />
 
       <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 24px' }}>
@@ -34,18 +37,6 @@ export default async function HomePage() {
             animation: 'glow 6s ease-in-out infinite',
             pointerEvents: 'none',
           }} />
-
-          <div style={{
-            position: 'relative',
-            fontFamily: "'Geist Mono', monospace",
-            fontSize: 12.5,
-            letterSpacing: '.2em',
-            textTransform: 'uppercase',
-            color: 'var(--accent)',
-            marginBottom: 22,
-          }}>
-            System design interviews
-          </div>
 
           <h1
             className="hero-h1"
@@ -75,48 +66,54 @@ export default async function HomePage() {
               textWrap: 'pretty' as never,
             }}
           >
-            A relentless AI interviewer that probes your architecture, follows up, and pushes back — so the real system design round feels easy.
+            A relentless AI interviewer that follows up, pushes back, and scores you honestly — tailored to your resume and the role.
           </p>
 
-          <div
-            className="cta-group"
-            style={{ position: 'relative', display: 'flex', gap: 13, marginTop: 34 }}
-          >
+          {/* Interview type cards */}
+          <div style={{ display: 'flex', gap: 13, marginTop: 40, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link href="/interview" style={{ textDecoration: 'none' }}>
+              <div className="interview-card-orange" style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+                borderRadius: 14, padding: '20px 24px', width: 220, textAlign: 'left',
+                cursor: 'pointer',
+              }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f97316' }} />
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6 }}>System Design</div>
+                <div style={{ fontSize: 12.5, color: 'var(--fg-dim)', lineHeight: 1.5 }}>Architecture, scale, and trade-offs across all four phases.</div>
+                <div style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: '#f97316' }}>Start →</div>
+              </div>
+            </Link>
+
+            <Link href="/technical" style={{ textDecoration: 'none' }}>
+              <div className="interview-card-teal" style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+                borderRadius: 14, padding: '20px 24px', width: 220, textAlign: 'left',
+                cursor: 'pointer',
+              }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#14b8a6' }} />
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6 }}>Technical</div>
+                <div style={{ fontSize: 12.5, color: 'var(--fg-dim)', lineHeight: 1.5 }}>Language internals, OOP, CS fundamentals, and hands-on coding.</div>
+                <div style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: '#14b8a6' }}>Start →</div>
+              </div>
+            </Link>
+          </div>
+
+          {userId && (
             <Link
-              href="/interview"
-              className="btn-primary"
+              href="/profile"
+              className="hero-sessions-btn"
               style={{
-                background: 'var(--accent)',
-                color: 'var(--accent-ink)',
-                fontSize: 15,
-                fontWeight: 600,
-                padding: '14px 24px',
-                borderRadius: 11,
-                boxShadow: '0 14px 30px -10px var(--accent-line)',
-                textDecoration: 'none',
+                marginTop: 16, fontSize: 13, fontWeight: 500, color: 'var(--fg-dim)',
+                textDecoration: 'none', position: 'relative',
               }}
             >
-              Start a mock interview
+              My sessions →
             </Link>
-            {userId && (
-              <Link
-                href="/profile"
-                className="hero-sessions-btn"
-                style={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: 'var(--fg-muted)',
-                  border: '1px solid var(--border-strong)',
-                  borderRadius: 11,
-                  padding: '14px 24px',
-                  textDecoration: 'none',
-                  textAlign: 'center',
-                }}
-              >
-                My sessions
-              </Link>
-            )}
-          </div>
+          )}
         </section>
 
         {/* ── Chat demo card ── */}

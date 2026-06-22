@@ -4,8 +4,11 @@ import { clerkMiddleware } from "@clerk/express";
 import { PostgresSaver } from "@langchain/langgraph-checkpoint-postgres";
 import pg from "pg";
 import { graph } from "./src/graph/graph";
+import { techGraph } from "./src/graph/technical/graph";
 import { setPool } from "./src/db/pool";
+import { runMigrations } from "./src/db/migrate";
 import { createGraphRouter } from "./src/routes/graph";
+import { createTechnicalGraphRouter } from "./src/routes/technical-graph";
 import { logger } from "./src/utils/logger";
 
 const app = express();
@@ -55,29 +58,13 @@ async function start() {
   const pool = new pg.Pool({ connectionString: dbUrl });
   setPool(pool);
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS interviews (
-      id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-      user_id     TEXT        NOT NULL,
-      thread_id   TEXT        NOT NULL UNIQUE,
-      question_title       TEXT,
-      question_description TEXT,
-      scores               JSONB,
-      phase_feedback       JSONB,
-      report_markdown      TEXT,
-      target_role          TEXT,
-      target_company       TEXT,
-      client_ip            TEXT,
-      created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-    CREATE INDEX IF NOT EXISTS interviews_user_created
-      ON interviews (user_id, created_at DESC);
-  `);
-  // Idempotent migration for existing deployments
-  await pool.query(`ALTER TABLE interviews ADD COLUMN IF NOT EXISTS client_ip TEXT;`);
+  await runMigrations(pool);
 
   const compiledGraph = graph.compile({ checkpointer });
   app.use("/graph", createGraphRouter(compiledGraph));
+
+  const compiledTechGraph = techGraph.compile({ checkpointer });
+  app.use("/technical-graph", createTechnicalGraphRouter(compiledTechGraph));
 
   app.listen(PORT, () => {
     logger.info("Agent server started", { port: PORT });

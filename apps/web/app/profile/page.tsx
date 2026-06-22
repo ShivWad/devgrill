@@ -5,7 +5,23 @@ import { UserButton } from '@clerk/nextjs'
 import { db } from '@/lib/db'
 import { interviews } from '@/lib/schema'
 import { eq, isNull, isNotNull, desc, and } from 'drizzle-orm'
+import { NewInterviewPicker } from '@/components/NewInterviewPicker'
 
+function TypeBadge({ type }: { type: string | null }) {
+  const isTech = type === 'technical'
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 600, letterSpacing: '.08em', textTransform: 'uppercase',
+      padding: '2px 7px', borderRadius: 4,
+      background: isTech ? 'rgba(20,184,166,0.12)' : 'rgba(249,115,22,0.10)',
+      color: isTech ? '#14b8a6' : '#f97316',
+      border: `1px solid ${isTech ? 'rgba(20,184,166,0.3)' : 'rgba(249,115,22,0.25)'}`,
+      fontFamily: "'Geist Mono', monospace", flexShrink: 0,
+    }}>
+      {isTech ? 'Technical' : 'System Design'}
+    </span>
+  )
+}
 
 export default async function ProfilePage() {
   const { userId } = await auth()
@@ -19,6 +35,7 @@ export default async function ProfilePage() {
         question_title: interviews.questionTitle,
         target_role: interviews.targetRole,
         target_company: interviews.targetCompany,
+        interview_type: interviews.interviewType,
         created_at: interviews.createdAt,
       })
       .from(interviews)
@@ -33,6 +50,7 @@ export default async function ProfilePage() {
         question_title: interviews.questionTitle,
         target_role: interviews.targetRole,
         target_company: interviews.targetCompany,
+        interview_type: interviews.interviewType,
         scores: interviews.scores,
         created_at: interviews.createdAt,
       })
@@ -53,9 +71,7 @@ export default async function ProfilePage() {
           <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--fg)' }}>DevGrill</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/interview" style={{ fontSize: 13.5, color: 'var(--fg-muted)', textDecoration: 'none' }}>
-            New interview
-          </Link>
+          <NewInterviewPicker />
           <UserButton />
         </div>
       </nav>
@@ -84,13 +100,19 @@ export default async function ProfilePage() {
                 const date = new Date(row.created_at).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric', year: 'numeric',
                 })
+                const continueHref = row.interview_type === 'technical'
+                  ? `/technical?threadId=${row.thread_id}`
+                  : `/interview?threadId=${row.thread_id}`
                 return (
                   <div key={row.id} style={{
                     background: 'var(--bg-card)', border: '1px solid var(--border-strong)', borderRadius: 12,
                     padding: '16px 20px', display: 'flex', alignItems: 'center',
                     justifyContent: 'space-between', gap: 16,
                   }}>
-                    <div style={{ minWidth: 0 }}>
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                        <TypeBadge type={row.interview_type} />
+                      </div>
                       <div style={{
                         fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 3,
                         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
@@ -101,7 +123,7 @@ export default async function ProfilePage() {
                         {[row.target_role, row.target_company].filter(Boolean).join(' · ')} · {date}
                       </div>
                     </div>
-                    <Link href={`/interview?threadId=${row.thread_id}`} style={{
+                    <Link href={continueHref} style={{
                       flexShrink: 0, fontSize: 13, fontWeight: 500,
                       background: 'var(--accent)', color: 'var(--accent-ink)',
                       padding: '8px 16px', borderRadius: 8, textDecoration: 'none',
@@ -127,7 +149,7 @@ export default async function ProfilePage() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {completed.map(row => {
-                const score = row.scores?.overall ?? null
+                const score = (row.scores as { overall?: number } | null)?.overall ?? null
                 const date = new Date(row.created_at).toLocaleDateString('en-US', {
                   month: 'short', day: 'numeric', year: 'numeric',
                 })
@@ -138,7 +160,10 @@ export default async function ProfilePage() {
                       padding: '16px 20px', display: 'flex', alignItems: 'center',
                       justifyContent: 'space-between', gap: 16,
                     }}>
-                      <div style={{ minWidth: 0 }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                          <TypeBadge type={row.interview_type} />
+                        </div>
                         <div style={{
                           fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 3,
                           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',

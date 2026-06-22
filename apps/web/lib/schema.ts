@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, jsonb, timestamp } from 'drizzle-orm/pg-core'
-import type { RubricScores, PhaseFeedback } from '@devgrill/shared'
+import type { RubricScores, PhaseFeedback, TechRubricScores, TechPhaseFeedback } from '@devgrill/shared'
 
 export const subscriptions = pgTable('subscriptions', {
   id:        uuid('id').primaryKey().defaultRandom(),
@@ -22,11 +22,12 @@ export const interviews = pgTable('interviews', {
   threadId:            text('thread_id').notNull().unique(),
   questionTitle:       text('question_title'),
   questionDescription: text('question_description'),
-  scores:              jsonb('scores').$type<RubricScores>(),
-  phaseFeedback:       jsonb('phase_feedback').$type<PhaseFeedback[]>(),
+  scores:              jsonb('scores').$type<RubricScores | TechRubricScores>(),
+  phaseFeedback:       jsonb('phase_feedback').$type<PhaseFeedback[] | TechPhaseFeedback[]>(),
   reportMarkdown:      text('report_markdown'),
   targetRole:          text('target_role'),
   targetCompany:       text('target_company'),
   clientIp:            text('client_ip'),
+  interviewType:       text('interview_type').default('system_design'),
   createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })

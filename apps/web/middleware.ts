@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 const isPublicRoute = createRouteMatcher([
   '/',
@@ -6,17 +7,33 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/pricing',
   '/interview',
+  '/technical',
   '/api/webhooks/clerk',
   '/api/waitlist',
   '/api/interview/invoke',
   '/api/interview/resume',
   '/api/interview/state/(.*)',
   '/api/interview/auto-candidate',
+  '/api/technical-interview/invoke',
+  '/api/technical-interview/resume',
+  '/api/technical-interview/state/(.*)',
+  '/api/technical-interview/auto-candidate',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth.protect()
+  }
+
+  const path = req.nextUrl.pathname
+  if (path === '/interview' || path === '/technical') {
+    const res = NextResponse.next()
+    res.cookies.set('dg_last_type', path === '/technical' ? 'technical' : 'system_design', {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,
+      sameSite: 'lax',
+    })
+    return res
   }
 })
 

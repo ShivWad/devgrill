@@ -15,17 +15,18 @@ export async function POST() {
 
   const jar = await cookies()
   const guestId = jar.get(GUEST_COOKIE)?.value
-  if (!guestId) return NextResponse.json({ claimed: 0, threadId: null })
+  if (!guestId) return NextResponse.json({ claimed: 0, threadId: null, interviewType: null })
 
   // Find the most recent incomplete interview before re-attributing
   const incomplete = await db
-    .select({ threadId: interviews.threadId })
+    .select({ threadId: interviews.threadId, interviewType: interviews.interviewType })
     .from(interviews)
     .where(and(eq(interviews.userId, guestId), isNull(interviews.scores)))
     .orderBy(desc(interviews.createdAt))
     .limit(1)
 
   const resumeThreadId = incomplete[0]?.threadId ?? null
+  const resumeInterviewType = incomplete[0]?.interviewType ?? 'system_design'
 
   const result = await db
     .update(interviews)
@@ -33,9 +34,9 @@ export async function POST() {
     .where(eq(interviews.userId, guestId))
     .returning({ id: interviews.id })
 
-  log.info('Guest interviews claimed', { userId, guestId, count: result.length, resumeThreadId })
+  log.info('Guest interviews claimed', { userId, guestId, count: result.length, resumeThreadId, resumeInterviewType })
 
-  const res = NextResponse.json({ claimed: result.length, threadId: resumeThreadId })
+  const res = NextResponse.json({ claimed: result.length, threadId: resumeThreadId, interviewType: resumeInterviewType })
   res.cookies.delete(GUEST_COOKIE)
   return res
 }

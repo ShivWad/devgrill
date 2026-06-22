@@ -4,17 +4,15 @@ import { useState, useRef, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import type { Phase, RubricScores, PhaseFeedback } from '@devgrill/shared'
+import type { TechPhase, TechRubricScores, TechPhaseFeedback } from '@devgrill/shared'
 
-import { LoadingView } from '@/components/interview/LoadingView'
-import { SetupView } from '@/components/interview/SetupView'
-import { ChatView } from '@/components/interview/ChatView'
-import { ReportView } from '@/components/interview/ReportView'
-import { GLOBAL_STYLES, type Msg, type TurnResponse, type View } from '@/components/interview/types'
+import { TechLoadingView } from '@/components/technical-interview/LoadingView'
+import { TechSetupView } from '@/components/technical-interview/SetupView'
+import { TechChatView } from '@/components/technical-interview/ChatView'
+import { TechReportView } from '@/components/technical-interview/ReportView'
+import { TECH_GLOBAL_STYLES, type TechMsg, type TechTurnResponse, type TechView } from '@/components/technical-interview/types'
 
-// ── State ─────────────────────────────────────────────────────────────────────
-
-function InterviewPage() {
+function TechnicalInterviewPage() {
   const { isSignedIn } = useUser()
   const router = useRouter()
 
@@ -24,30 +22,27 @@ function InterviewPage() {
       .then(r => r.json())
       .then(({ threadId, interviewType }) => {
         if (threadId && view === 'setup') {
-          if (interviewType === 'technical') {
-            router.replace(`/technical?threadId=${threadId}`)
-          } else {
+          if (interviewType === 'system_design' || !interviewType) {
             router.replace(`/interview?threadId=${threadId}`)
+          } else {
+            router.replace(`/technical?threadId=${threadId}`)
           }
         }
       })
       .catch(() => {})
   }, [isSignedIn])
 
-  // View state
-  const [view, setView] = useState<View>('setup')
+  const [view, setView] = useState<TechView>('setup')
   const [resumingSession, setResumingSession] = useState(false)
 
-  // Setup form fields
   const [resumeText, setResumeText] = useState('')
   const [jdText, setJdText] = useState('')
   const [targetRole, setTargetRole] = useState('')
   const [targetCompany, setTargetCompany] = useState('')
 
-  // Interview session
   const [threadId, setThreadId] = useState(() => crypto.randomUUID())
-  const [msgs, setMsgs] = useState<Msg[]>([])
-  const [phase, setPhase] = useState<Phase>('requirements')
+  const [msgs, setMsgs] = useState<TechMsg[]>([])
+  const [phase, setPhase] = useState<TechPhase>('warm_up')
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [autoLoading, setAutoLoading] = useState(false)
@@ -56,16 +51,13 @@ function InterviewPage() {
   const [questionTitle, setQuestionTitle] = useState('')
   const [questionOpen, setQuestionOpen] = useState(false)
 
-  // Report
-  const [scores, setScores] = useState<RubricScores | null>(null)
-  const [phaseFeedback, setPhaseFeedback] = useState<PhaseFeedback[]>([])
+  const [scores, setScores] = useState<TechRubricScores | null>(null)
+  const [phaseFeedback, setPhaseFeedback] = useState<TechPhaseFeedback[]>([])
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const searchParams = useSearchParams()
 
-  // ── Session restore ─────────────────────────────────────────────────────────
-  // If ?threadId= is in the URL (navigated from /profile), restore that session.
   useEffect(() => {
     const resumeId = searchParams.get('threadId')
     if (!resumeId) return
@@ -76,11 +68,11 @@ function InterviewPage() {
 
     async function restoreSession(id: string) {
       try {
-        const stateRes = await fetch(`/api/interview/state/${id}`)
+        const stateRes = await fetch(`/api/technical-interview/state/${id}`)
         if (!stateRes.ok) { setView('setup'); return }
         const s = await stateRes.json()
 
-        const restored: Msg[] = (s.messages ?? []).map((m: { role: string; content: string }) => ({
+        const restored: TechMsg[] = (s.messages ?? []).map((m: { role: string; content: string }) => ({
           role: m.role as 'interviewer' | 'candidate',
           content: m.content,
         }))
@@ -88,7 +80,7 @@ function InterviewPage() {
         if (firstInterviewer) setQuestionText(firstInterviewer.content)
         if (s.question?.title) setQuestionTitle(s.question.title)
         setMsgs(restored)
-        setPhase(s.phase ?? 'requirements')
+        setPhase(s.phase ?? 'warm_up')
 
         if (s.interviewComplete) {
           if (s.scores) setScores(s.scores)
@@ -105,14 +97,11 @@ function InterviewPage() {
     restoreSession(resumeId)
   }, [searchParams])
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [msgs, sending])
-
-  // ── Handlers ────────────────────────────────────────────────────────────────
 
   async function startInterview() {
     if (!resumeText.trim()) { setError('Resume is required.'); return }
@@ -121,7 +110,7 @@ function InterviewPage() {
     setView('loading')
 
     try {
-      const res = await fetch('/api/interview/invoke', {
+      const res = await fetch('/api/technical-interview/invoke', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, resumeText, jdText, targetRole, targetCompany }),
@@ -131,11 +120,11 @@ function InterviewPage() {
       if (res.status === 429) throw new Error("You've started too many interviews this hour. Take a break and try again shortly.")
       if (!res.ok) throw new Error(data.error ?? 'Failed to start interview')
 
-      const turn = data as TurnResponse
+      const turn = data as TechTurnResponse
       if (turn.openingMessage) setQuestionText(turn.openingMessage)
       if (turn.questionTitle) setQuestionTitle(turn.questionTitle)
 
-      const initialMsgs: Msg[] = []
+      const initialMsgs: TechMsg[] = []
       if (turn.openingMessage) initialMsgs.push({ role: 'interviewer', content: turn.openingMessage })
       if (turn.interviewerMessage) initialMsgs.push({ role: 'interviewer', content: turn.interviewerMessage })
       setMsgs(initialMsgs)
@@ -157,7 +146,7 @@ function InterviewPage() {
     setError(null)
 
     try {
-      const res = await fetch('/api/interview/resume', {
+      const res = await fetch('/api/technical-interview/resume', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, candidateAnswer: answer }),
@@ -165,7 +154,7 @@ function InterviewPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error ?? 'Failed to send message')
 
-      const turn = data as TurnResponse
+      const turn = data as TechTurnResponse
       setPhase(turn.phase)
       if (turn.interviewerMessage) {
         setMsgs(prev => [...prev, { role: 'interviewer', content: turn.interviewerMessage! }])
@@ -188,7 +177,7 @@ function InterviewPage() {
     setAutoLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/interview/auto-candidate', {
+      const res = await fetch('/api/technical-interview/auto-candidate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId }),
@@ -210,79 +199,81 @@ function InterviewPage() {
     }
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  if (view === 'trial_gate') return <TechTrialGateView />
 
-  if (view === 'trial_gate') return <TrialGateView />
-
-  if (view === 'loading') return <LoadingView resuming={resumingSession} />
+  if (view === 'loading') return <TechLoadingView resuming={resumingSession} />
 
   if (view === 'complete' && scores) {
     return (
       <>
-        {!isSignedIn && <SignupBanner />}
-        <ReportView
-          scores={scores}
-          phaseFeedback={phaseFeedback}
-          questionTitle={questionTitle || 'System Design Interview'}
-          targetRole={targetRole}
-          targetCompany={targetCompany}
-        />
+        {!isSignedIn && <TechSignupBanner />}
+        <div className="theme-teal">
+          <TechReportView
+            scores={scores}
+            phaseFeedback={phaseFeedback}
+            questionTitle={questionTitle || 'Technical Interview'}
+            targetRole={targetRole}
+            targetCompany={targetCompany}
+          />
+        </div>
       </>
     )
   }
 
   if (view === 'chat' || view === 'complete') {
     return (
-      <ChatView
-        msgs={msgs}
-        phase={phase}
-        sending={sending}
-        autoLoading={autoLoading}
-        input={input}
-        error={error}
-        isComplete={view === 'complete'}
-        questionText={questionText}
-        questionOpen={questionOpen}
-        scrollRef={scrollRef}
-        inputRef={inputRef}
-        onInput={setInput}
-        onSend={() => sendMessage()}
-        onAutoAnswer={autoAnswer}
-        onKeyDown={handleKeyDown}
-        onToggleQuestion={() => setQuestionOpen(o => !o)}
-      />
+      <div className="theme-teal">
+        <TechChatView
+          msgs={msgs}
+          phase={phase}
+          sending={sending}
+          autoLoading={autoLoading}
+          input={input}
+          error={error}
+          isComplete={view === 'complete'}
+          questionText={questionText}
+          questionOpen={questionOpen}
+          scrollRef={scrollRef}
+          inputRef={inputRef}
+          onInput={setInput}
+          onSend={sendMessage}
+          onAutoAnswer={autoAnswer}
+          onKeyDown={handleKeyDown}
+          onToggleQuestion={() => setQuestionOpen(o => !o)}
+        />
+      </div>
     )
   }
 
   return (
-    <SetupView
-      resumeText={resumeText}
-      jdText={jdText}
-      targetRole={targetRole}
-      targetCompany={targetCompany}
-      error={error}
-      onResumeText={setResumeText}
-      onJdText={setJdText}
-      onTargetRole={setTargetRole}
-      onTargetCompany={setTargetCompany}
-      onStart={startInterview}
-    />
+    <div className="theme-teal">
+      <style>{TECH_GLOBAL_STYLES}</style>
+      <TechSetupView
+        resumeText={resumeText}
+        jdText={jdText}
+        targetRole={targetRole}
+        targetCompany={targetCompany}
+        error={error}
+        onResumeText={setResumeText}
+        onJdText={setJdText}
+        onTargetRole={setTargetRole}
+        onTargetCompany={setTargetCompany}
+        onStart={startInterview}
+      />
+    </div>
   )
 }
 
-// ── Guest UI components ───────────────────────────────────────────────────────
-
-function TrialGateView() {
+function TechTrialGateView() {
   return (
-    <div style={{
+    <div className="theme-teal" style={{
       minHeight: '100vh', background: '#0a0a0a', color: '#fafafa',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '24px',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px',
     }}>
       <div style={{ textAlign: 'center', maxWidth: 420 }}>
         <div style={{
           width: 48, height: 48, borderRadius: '50%',
-          background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)',
+          background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 24px', fontSize: 22,
         }}>
@@ -295,15 +286,14 @@ function TrialGateView() {
           You&rsquo;ve completed 2 guest interviews. Sign up for free to keep going — no credit card required.
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-          <Link href="/sign-up?redirect_url=/interview" style={{
+          <Link href="/sign-up?redirect_url=/technical" style={{
             display: 'inline-block', padding: '11px 24px',
             background: 'var(--accent)', color: 'var(--accent-ink)',
             borderRadius: 9, fontSize: 14, fontWeight: 600, textDecoration: 'none',
-            boxShadow: '0 8px 20px -8px var(--accent-line)',
           }}>
             Sign up free →
           </Link>
-          <Link href="/sign-in?redirect_url=/interview" style={{
+          <Link href="/sign-in?redirect_url=/technical" style={{
             display: 'inline-block', padding: '11px 24px',
             background: '#161616', border: '1px solid #2a2a2a',
             color: '#ccc', borderRadius: 9, fontSize: 14, fontWeight: 500, textDecoration: 'none',
@@ -316,31 +306,25 @@ function TrialGateView() {
   )
 }
 
-function SignupBanner() {
+function TechSignupBanner() {
   return (
-    <div style={{
-      background: '#0f0f0f',
-      borderBottom: '1px solid rgba(249,115,22,0.2)',
-      padding: '14px 24px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      gap: 16, flexWrap: 'wrap', textAlign: 'center',
+    <div className="theme-teal" style={{
+      background: '#0f0f0f', borderBottom: '1px solid rgba(20,184,166,0.2)',
+      padding: '14px 24px', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', gap: 16, flexWrap: 'wrap', textAlign: 'center',
     }}>
       <span style={{ fontSize: 14, color: '#888' }}>
         Sign up to track progress, compare scores, and save all your interviews.
       </span>
-      <Link href="/sign-up?redirect_url=/interview" style={{
-        padding: '7px 16px',
-        background: 'var(--accent)', color: 'var(--accent-ink)',
-        borderRadius: 7, fontSize: 13, fontWeight: 600, textDecoration: 'none',
-        whiteSpace: 'nowrap',
+      <Link href="/sign-up?redirect_url=/technical" style={{
+        padding: '7px 16px', background: 'var(--accent)', color: 'var(--accent-ink)',
+        borderRadius: 7, fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
       }}>
         Create free account →
       </Link>
     </div>
   )
 }
-
-// ── Suspense boundary required for useSearchParams() ─────────────────────────
 
 const SUSPENSE_SPINNER = `
   @keyframes breathe { 0%, 100% { transform: scale(0.7); opacity: 0; } 50% { transform: scale(1); opacity: 1; } }
@@ -349,7 +333,7 @@ const SUSPENSE_SPINNER = `
 
 function SuspenseFallback() {
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="theme-teal" style={{ minHeight: '100vh', background: '#0a0a0a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <style>{SUSPENSE_SPINNER}</style>
       <div style={{ position: 'relative', width: 64, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--accent-soft)', animation: 'breathe 2.4s ease-in-out infinite' }} />
@@ -360,10 +344,10 @@ function SuspenseFallback() {
   )
 }
 
-export default function InterviewPageWrapper() {
+export default function TechnicalInterviewPageWrapper() {
   return (
     <Suspense fallback={<SuspenseFallback />}>
-      <InterviewPage />
+      <TechnicalInterviewPage />
     </Suspense>
   )
 }

@@ -1,6 +1,7 @@
 import { getPool } from "./pool";
 import { logger } from "../utils/logger";
 import type { InterviewStateType } from "../graph/state";
+import type { TechInterviewStateType } from "../graph/technical/state";
 
 /**
  * Inserts a new interview row when a session starts.
@@ -12,16 +13,17 @@ export async function createInterview(
   targetRole: string,
   targetCompany: string,
   clientIp?: string,
+  interviewType: "system_design" | "technical" = "system_design",
 ) {
   const log = logger.child({ fn: "createInterview", threadId, userId });
   try {
     await getPool().query(
-      `INSERT INTO interviews (user_id, thread_id, target_role, target_company, client_ip)
-       VALUES ($1,$2,$3,$4,$5)
+      `INSERT INTO interviews (user_id, thread_id, target_role, target_company, client_ip, interview_type)
+       VALUES ($1,$2,$3,$4,$5,$6)
        ON CONFLICT (thread_id) DO NOTHING`,
-      [userId, threadId, targetRole || null, targetCompany || null, clientIp ?? null],
+      [userId, threadId, targetRole || null, targetCompany || null, clientIp ?? null, interviewType],
     );
-    log.info("Interview row created");
+    log.info("Interview row created", { interviewType });
   } catch (err) {
     const error = err instanceof Error ? err : new Error(String(err));
     log.error("DB insert failed for createInterview", { err: error.message, stack: error.stack });
@@ -43,13 +45,22 @@ export async function threadBelongsToUser(
   return result.rowCount > 0;
 }
 
+type CompletableState = (InterviewStateType | TechInterviewStateType) & {
+  interviewComplete: boolean;
+  question: { title?: string; description?: string } | null;
+  scores: unknown;
+  phaseFeedback: unknown;
+  reportMarkdown: string | null;
+};
+
 /**
  * Updates the interview row with scores and report once all phases complete.
- * No-ops if the interview is not yet complete.
+ * No-ops if the interview is not yet complete. Works for both system design
+ * and technical interview state shapes.
  */
 export async function completeInterview(
   threadId: string,
-  state: InterviewStateType,
+  state: CompletableState,
 ) {
   if (!state.interviewComplete) return;
   const log = logger.child({ fn: "completeInterview", threadId });

@@ -5,7 +5,7 @@ import { UserButton } from '@clerk/nextjs'
 import { db } from '@/lib/db'
 import { interviews } from '@/lib/schema'
 import { eq, and } from 'drizzle-orm'
-import type { RubricScores } from '@devgrill/shared'
+import type { RubricScores, TechRubricScores } from '@devgrill/shared'
 
 function ScoreBar({ label, value, max = 5 }: { label: string; value: number; max?: number }) {
   const pct = (value / max) * 100
@@ -33,6 +33,15 @@ const RUBRIC_LABELS: [string, keyof RubricScores][] = [
   ['Communication', 'communication'],
 ]
 
+const TECH_RUBRIC_LABELS: [string, keyof TechRubricScores][] = [
+  ['Language proficiency', 'languageProficiency'],
+  ['CS fundamentals', 'csFundamentals'],
+  ['Problem solving', 'problemSolving'],
+  ['Code quality', 'codeQuality'],
+  ['Design thinking', 'designThinking'],
+  ['Communication', 'communication'],
+]
+
 export default async function InterviewDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth()
   if (!userId) redirect('/sign-in')
@@ -48,6 +57,7 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
       reportMarkdown: interviews.reportMarkdown,
       targetRole: interviews.targetRole,
       targetCompany: interviews.targetCompany,
+      interviewType: interviews.interviewType,
       createdAt: interviews.createdAt,
     })
     .from(interviews)
@@ -59,6 +69,10 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
 
   const scores = row.scores ?? null
   const phaseFeedback = row.phaseFeedback ?? []
+  const isTechnical = row.interviewType === 'technical'
+  const rubricLabels = isTechnical
+    ? TECH_RUBRIC_LABELS as [string, string][]
+    : RUBRIC_LABELS as [string, string][]
   const date = new Date(row.createdAt).toLocaleDateString('en-US', {
     month: 'long', day: 'numeric', year: 'numeric',
   })
@@ -124,8 +138,8 @@ export default async function InterviewDetailPage({ params }: { params: Promise<
               <h2 style={{ fontSize: 12, fontWeight: 600, color: 'var(--fg-dim)', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '.08em' }}>
                 Breakdown
               </h2>
-              {RUBRIC_LABELS.map(([label, key]) => {
-                const val = scores[key]
+              {rubricLabels.map(([label, key]) => {
+                const val = (scores as unknown as Record<string, unknown>)[key]
                 if (typeof val !== 'number') return null
                 return <ScoreBar key={key} label={label} value={val} max={5} />
               })}
