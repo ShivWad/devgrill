@@ -16,7 +16,6 @@ export interface TechChatProps {
   msgs: TechMsg[];
   phase: TechPhase;
   sending: boolean;
-  autoLoading: boolean;
   input: string;
   error: string | null;
   isComplete: boolean;
@@ -26,14 +25,13 @@ export interface TechChatProps {
   inputRef: React.RefObject<HTMLTextAreaElement | null>;
   onInput: (v: string) => void;
   onSend: (combined?: string) => void;
-  onAutoAnswer: () => void;
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   onToggleQuestion: () => void;
 }
 
 export function TechChatView(p: TechChatProps) {
   const phaseIdx = TECH_PHASES.indexOf(p.phase);
-  const isDisabled = p.sending || p.autoLoading;
+  const isDisabled = p.sending;
 
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -287,19 +285,6 @@ export function TechChatView(p: TechChatProps) {
                     }}
                   >
                     {codeOpen ? "— Code" : "+ Code"}
-                  </button>
-                  <button
-                    onClick={p.onAutoAnswer}
-                    disabled={isDisabled}
-                    style={{
-                      background: "var(--bg-input)", border: "1px solid var(--border-strong)",
-                      color: isDisabled ? "var(--fg-faint)" : "var(--fg-dim)",
-                      borderRadius: 7, padding: "5px 10px", fontSize: 12,
-                      cursor: isDisabled ? "not-allowed" : "pointer",
-                      fontFamily: "'Geist Mono', monospace",
-                    }}
-                  >
-                    {p.autoLoading ? "…" : "Auto"}
                   </button>
                 </div>
               </div>

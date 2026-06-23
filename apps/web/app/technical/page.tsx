@@ -45,7 +45,6 @@ function TechnicalInterviewPage() {
   const [phase, setPhase] = useState<TechPhase>('warm_up')
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
-  const [autoLoading, setAutoLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [questionText, setQuestionText] = useState<string | null>(null)
   const [questionTitle, setQuestionTitle] = useState('')
@@ -172,26 +171,6 @@ function TechnicalInterviewPage() {
     }
   }
 
-  async function autoAnswer() {
-    if (sending || autoLoading) return
-    setAutoLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/technical-interview/auto-candidate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threadId }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? 'Failed to generate answer')
-      await sendMessage(data.candidateAnswer)
-    } catch (e) {
-      setError(String(e))
-    } finally {
-      setAutoLoading(false)
-    }
-  }
-
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -227,7 +206,6 @@ function TechnicalInterviewPage() {
           msgs={msgs}
           phase={phase}
           sending={sending}
-          autoLoading={autoLoading}
           input={input}
           error={error}
           isComplete={view === 'complete'}
@@ -237,7 +215,6 @@ function TechnicalInterviewPage() {
           inputRef={inputRef}
           onInput={setInput}
           onSend={sendMessage}
-          onAutoAnswer={autoAnswer}
           onKeyDown={handleKeyDown}
           onToggleQuestion={() => setQuestionOpen(o => !o)}
         />
