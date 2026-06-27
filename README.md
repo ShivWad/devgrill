@@ -1,8 +1,8 @@
 # DevGrill
 
-Multi-turn AI agent that conducts **personalized** system design interviews. Upload your resume + job description → agent generates a tailored question targeting the gap between your experience and the role's requirements → realistic multi-phase interview → structured scoring and actionable feedback.
+Multi-turn AI agent that conducts **personalized** technical and system design interviews. Upload your resume + job description → agent generates a tailored question targeting the gap between your experience and the role's requirements → realistic multi-phase interview → structured scoring and actionable feedback.
 
-**Live at**: [interview.shivwad.in](https://interview.shivwad.in)
+**Live at**: [grill.shivwad.in](https://grill.shivwad.in)
 
 ## Architecture
 
@@ -57,7 +57,7 @@ cd apps/web && pnpm dev
 | Key | Where | Purpose |
 |-----|-------|---------|
 | `DEEPSEEK_API_KEY` | agent | LLM calls |
-| `ANTHROPIC_API_KEY` | agent | fallback (planned) |
+| `ANTHROPIC_API_KEY` | agent | fallback LLM |
 | `DATABASE_URL` | agent + web | Neon Postgres |
 | `CLERK_SECRET_KEY` | agent + web | JWT verification |
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | agent + web | Clerk client key |
@@ -65,7 +65,9 @@ cd apps/web && pnpm dev
 
 ## Key Features
 
+- **Two interview types** — System Design (4-phase: requirements → design → deep dive → scale) and Technical (language internals, OOP, CS fundamentals, coding)
 - **Personalized questions** — resume-JD gap analysis, never generic
+- **Guest trial** — 2 free interviews before sign-up gate
 - **Postgres-backed sessions** — interviews survive page reloads and server restarts
 - **Session restore** — `/profile` shows active sessions; Continue picks up exactly where you left off
 - **Structured report** — per-category rubric scores, phase breakdown, gap analysis, resume advice
