@@ -4,6 +4,7 @@ import { cookies } from 'next/headers'
 import ChatDemo from '@/components/ChatDemo'
 import MrGrillSection from '@/components/MrGrillSection'
 import { LandingNav } from '@/components/LandingNav'
+import { ScrollRevealInit } from '@/components/ScrollRevealInit'
 
 export default async function HomePage() {
   const { userId } = await auth()
@@ -11,6 +12,7 @@ export default async function HomePage() {
   const isTeal = cookieStore.get('dg_last_type')?.value === 'technical'
   return (
     <div className={isTeal ? 'theme-teal' : ''} style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      <ScrollRevealInit />
       <LandingNav userId={userId} />
 
       <div style={{ maxWidth: 1140, margin: '0 auto', padding: '0 24px' }}>
@@ -117,7 +119,9 @@ export default async function HomePage() {
         </section>
 
         {/* ── Chat demo card ── */}
-        <ChatDemo />
+        <div data-reveal data-reveal-delay="0">
+          <ChatDemo />
+        </div>
 
         {/* ── Feature pills ── */}
         <section style={{ padding: '40px 0 12px' }}>
@@ -129,18 +133,23 @@ export default async function HomePage() {
               {
                 title: 'Adaptive grilling',
                 body: 'Follow-ups that bend to your answers — exactly like a real panel.',
+                delay: 0,
               },
               {
                 title: 'The whole stack',
                 body: 'Sharding, caching, queues, consistency — the trade-offs that decide the round.',
+                delay: 80,
               },
               {
                 title: 'Honest scorecard',
                 body: 'A clear breakdown of where you cracked, after every round.',
+                delay: 160,
               },
             ].map(pill => (
               <div
                 key={pill.title}
+                data-reveal
+                data-reveal-delay={pill.delay}
                 style={{
                   background: 'var(--bg-card)',
                   border: '1px solid var(--border)',
@@ -179,7 +188,7 @@ export default async function HomePage() {
         <div style={{ maxWidth: 1140, margin: '0 auto' }}>
 
           {/* Section header */}
-          <div style={{ marginBottom: 52 }}>
+          <div data-reveal style={{ marginBottom: 52 }}>
             <div style={{
               fontFamily: "'Geist Mono', monospace",
               fontSize: 12,
@@ -221,14 +230,13 @@ export default async function HomePage() {
           <div className="how-it-works-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
 
             {/* Step 1 */}
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
+            <div data-reveal data-reveal-delay="0" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
                   background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  {/* Upload icon */}
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path d="M7.5 1v8M4.5 4L7.5 1l3 3M2 10v3a1 1 0 001 1h9a1 1 0 001-1v-3" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -245,14 +253,13 @@ export default async function HomePage() {
             </div>
 
             {/* Step 2 */}
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
+            <div data-reveal data-reveal-delay="100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
                   background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  {/* Chat icon */}
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <path d="M2 2h11a1 1 0 011 1v7a1 1 0 01-1 1H8l-3 2v-2H2a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="var(--accent)" strokeWidth="1.4" strokeLinejoin="round"/>
                   </svg>
@@ -270,14 +277,13 @@ export default async function HomePage() {
             </div>
 
             {/* Step 3 */}
-            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
+            <div data-reveal data-reveal-delay="200" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 14, padding: '26px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
                 <div style={{
                   width: 32, height: 32, borderRadius: 9,
                   background: 'var(--accent-soft)', border: '1px solid var(--accent-line)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                 }}>
-                  {/* Score icon */}
                   <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
                     <rect x="1" y="9" width="3" height="5" rx="1" fill="var(--accent)" opacity=".5"/>
                     <rect x="6" y="5" width="3" height="9" rx="1" fill="var(--accent)" opacity=".75"/>
@@ -298,7 +304,7 @@ export default async function HomePage() {
           </div>
 
           {/* Footer note */}
-          <p style={{ marginTop: 28, fontSize: 13.5, color: 'var(--fg-faint)', textAlign: 'center', lineHeight: 1.6 }}>
+          <p data-reveal style={{ marginTop: 28, fontSize: 13.5, color: 'var(--fg-faint)', textAlign: 'center', lineHeight: 1.6 }}>
             The whole interview takes 20–30 minutes. The feedback tells you exactly what to work on before the real thing.
           </p>
 
@@ -327,7 +333,7 @@ export default async function HomePage() {
         </div>
         <div style={{ display: 'flex', gap: 22, fontSize: 13, color: 'var(--fg-dim)' }}>
           <Link href="/pricing" style={{ color: 'var(--fg-dim)', textDecoration: 'none' }} className="nav-link">Pricing</Link>
-          <span className="nav-link">Docs</span>
+          <Link href="/why" style={{ color: 'var(--fg-dim)', textDecoration: 'none' }} className="nav-link">Why I built this</Link>
           <span style={{ color: 'var(--fg-faint)' }}>© 2026</span>
         </div>
       </footer>
