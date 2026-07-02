@@ -102,6 +102,21 @@ export default async function HomePage() {
                 <div style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: '#14b8a6' }}>Start →</div>
               </div>
             </Link>
+
+            <Link href="/ats" style={{ textDecoration: 'none' }}>
+              <div className="interview-card-orange" style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
+                borderRadius: 14, padding: '20px 24px', width: 220, textAlign: 'left',
+                cursor: 'pointer',
+              }}>
+                <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f97316' }} />
+                </div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--fg-2)', marginBottom: 6 }}>ATS Score</div>
+                <div style={{ fontSize: 12.5, color: 'var(--fg-dim)', lineHeight: 1.5 }}>Check your resume fit before you apply.</div>
+                <div style={{ marginTop: 14, fontSize: 13, fontWeight: 600, color: '#f97316' }}>Check now →</div>
+              </div>
+            </Link>
           </div>
 
           {userId && (

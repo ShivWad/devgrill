@@ -44,6 +44,14 @@ function InterviewPage() {
   const [targetRole, setTargetRole] = useState('')
   const [targetCompany, setTargetCompany] = useState('')
 
+  // Pre-fill from ATS page via sessionStorage
+  useEffect(() => {
+    const storedResume = sessionStorage.getItem('dg_ats_resume')
+    const storedJD = sessionStorage.getItem('dg_ats_jd')
+    if (storedResume) { setResumeText(storedResume); sessionStorage.removeItem('dg_ats_resume') }
+    if (storedJD) { setJdText(storedJD); sessionStorage.removeItem('dg_ats_jd') }
+  }, [])
+
   // Interview session
   const [threadId, setThreadId] = useState(() => crypto.randomUUID())
   const [msgs, setMsgs] = useState<Msg[]>([])

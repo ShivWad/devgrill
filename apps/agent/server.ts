@@ -9,6 +9,7 @@ import { setPool } from "./src/db/pool";
 import { runMigrations } from "./src/db/migrate";
 import { createGraphRouter } from "./src/routes/graph";
 import { createTechnicalGraphRouter } from "./src/routes/technical-graph";
+import { createAtsRouter } from "./src/routes/ats";
 import { logger } from "./src/utils/logger";
 
 const app = express();
@@ -43,6 +44,8 @@ app.use(
 app.get("/health", (_req, res) => {
   res.json({ ok: true });
 });
+
+app.use("/ats", createAtsRouter());
 
 // ── Startup ───────────────────────────────────────────────────────────────────
 

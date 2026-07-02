@@ -37,6 +37,7 @@ export function LandingNav({ userId }: { userId: string | null }) {
           {/* Desktop nav links (hidden on mobile via globals.css) */}
           <div className="nav-links" style={{ display: 'flex', gap: 26, fontSize: 14 }}>
             <a href="#how-it-works" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }} className="nav-link">How it works</a>
+            <Link href="/ats" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }} className="nav-link">ATS Score</Link>
             <Link href="/pricing" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }} className="nav-link">Pricing</Link>
             <Link href="/why" style={{ color: 'var(--fg-muted)', textDecoration: 'none' }} className="nav-link">Why</Link>
             {!userId && (
@@ -92,6 +93,7 @@ export function LandingNav({ userId }: { userId: string | null }) {
       {open && (
         <div className="mobile-menu" onClick={() => setOpen(false)}>
           <a href="#how-it-works">How it works</a>
+          <Link href="/ats">ATS Score</Link>
           <Link href="/pricing">Pricing</Link>
           <Link href="/why">Why I built this</Link>
           {userId ? (

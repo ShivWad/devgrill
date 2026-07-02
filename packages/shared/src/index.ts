@@ -92,3 +92,21 @@ export interface TechPhaseFeedback {
   gaps: string[];
   specificQuotes: string[];
 }
+
+export interface ATSResult {
+  overallScore: number;
+  keywordAnalysis: {
+    present: string[];
+    missing: string[];
+  };
+  sectionScores: {
+    summary: number;
+    experience: number;
+    skills: number;
+  };
+  topGaps: Array<{
+    gap: string;
+    suggestion: string;
+  }>;
+  strengths: string[];
+}

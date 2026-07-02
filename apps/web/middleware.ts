@@ -9,6 +9,7 @@ const isPublicRoute = createRouteMatcher([
   '/why',
   '/interview',
   '/technical',
+  '/ats',
   '/api/webhooks/clerk',
   '/api/waitlist',
   '/api/interview/invoke',
@@ -19,6 +20,7 @@ const isPublicRoute = createRouteMatcher([
   '/api/technical-interview/resume',
   '/api/technical-interview/state/(.*)',
   '/api/technical-interview/auto-candidate',
+  '/api/ats/(.*)',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
