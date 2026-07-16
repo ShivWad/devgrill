@@ -3,6 +3,7 @@
 Multi-turn AI agent that conducts **personalized** technical and system design interviews. Upload your resume + job description → agent generates a tailored question targeting the gap between your experience and the role's requirements → realistic multi-phase interview → structured scoring and actionable feedback.
 
 **Live at**: [grill.shivwad.in](https://grill.shivwad.in)
+**Repo**: [github.com/ShivWad/devgrill](https://github.com/ShivWad/devgrill)
 
 ## Architecture
 
@@ -77,6 +78,10 @@ cd apps/web && pnpm dev
 ## Cost
 
 ~₹5–10 per interview (1 V4-Pro reasoning call + ~40–60 V4-Flash turns + 1 V4-Flash judge call).
+
+## Author
+
+Built by [ShivWad](https://shivwad.in) — [shivwad2k@gmail.com](mailto:shivwad2k@gmail.com)
 
 ---
 
